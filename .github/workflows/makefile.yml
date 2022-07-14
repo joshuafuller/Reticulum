@@ -9,10 +9,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-    
-    - name: configure
-      run: ./configure
-      
+         
     - name: Run make clean
       run: make clean
       

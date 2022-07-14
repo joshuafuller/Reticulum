@@ -1,0 +1,21 @@
+name: Makefile CI
+
+on: [push,pull_request]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: configure
+      run: ./configure
+      
+    - name: Run make clean
+      run: make clean
+      
+    - name: Run make release (includes tests and full build)
+      run: make release
+

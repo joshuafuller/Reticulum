@@ -13,7 +13,7 @@ jobs:
     - name: Install dependencies
       run: |
         pip install -U sphinx
-        sudo apt-get install latexmk
+        sudo apt-get install latexmk texlive-latex-extra
 
     - name: Run make clean
       run: make clean

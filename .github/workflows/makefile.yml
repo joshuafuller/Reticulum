@@ -13,7 +13,7 @@ jobs:
     - name: Install dependencies
       run: |
         pip install -U sphinx
-        apt-get install latexmk
+        sudo apt-get install latexmk
 
     - name: Run make clean
       run: make clean

@@ -19,6 +19,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   build:
+    name: Build on ubuntu-latest with Python ${{matrix.python-version}}
     runs-on: ubuntu-latest
     continue-on-error: true
     strategy:

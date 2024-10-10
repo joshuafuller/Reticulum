@@ -381,7 +381,7 @@ class PacketReceipt:
         self.proof_packet   = None
 
         if packet.destination.type == RNS.Destination.LINK:
-            self.timeout    = packet.destination.rtt * packet.destination.traffic_timeout_factor
+            self.timeout    = max(packet.destination.rtt * packet.destination.traffic_timeout_factor, RNS.Link.TRAFFIC_TIMEOUT_MIN_MS/1000)
         else:
             self.timeout    = RNS.Reticulum.get_instance().get_first_hop_timeout(self.destination.hash)
             self.timeout   += Packet.TIMEOUT_PER_HOP * RNS.Transport.hops_to(self.destination.hash)
@@ -453,7 +453,7 @@ class PacketReceipt:
             # This is an explicit proof
             proof_hash = proof[:RNS.Identity.HASHLENGTH//8]
             signature = proof[RNS.Identity.HASHLENGTH//8:RNS.Identity.HASHLENGTH//8+RNS.Identity.SIGLENGTH//8]
-            if proof_hash == self.hash:
+            if proof_hash == self.hash and hasattr(self.destination, "identity") and self.destination.identity != None:
                 proof_valid = self.destination.identity.validate(signature, self.hash)
                 if proof_valid:
                     self.status = PacketReceipt.DELIVERED

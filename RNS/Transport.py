@@ -65,7 +65,7 @@ class Transport:
 
     PATH_REQUEST_TIMEOUT        = 15           # Default timuout for client path requests in seconds
     PATH_REQUEST_GRACE          = 0.4          # Grace time before a path announcement is made, allows directly reachable peers to respond first
-    PATH_REQUEST_RG             = 0.6          # Extra grace time for roaming-mode interfaces to allow more suitable peers to respond first
+    PATH_REQUEST_RG             = 1.5          # Extra grace time for roaming-mode interfaces to allow more suitable peers to respond first
     PATH_REQUEST_MI             = 20           # Minimum interval in seconds for automated path requests
 
     STATE_UNKNOWN               = 0x00
@@ -301,11 +301,22 @@ class Transport:
             RNS.log("Transport instance "+str(Transport.identity)+" started", RNS.LOG_VERBOSE)
             Transport.start_time = time.time()
 
+        # Sort interfaces according to bitrate
+        Transport.prioritize_interfaces()
+
         # Synthesize tunnels for any interfaces wanting it
         for interface in Transport.interfaces:
             interface.tunnel_id = None
             if hasattr(interface, "wants_tunnel") and interface.wants_tunnel:
                 Transport.synthesize_tunnel(interface)
+
+    @staticmethod
+    def prioritize_interfaces():
+        try:
+            Transport.interfaces.sort(key=lambda interface: interface.bitrate, reverse=True)
+
+        except Exception as e:
+            RNS.log(f"Could not prioritize interfaces according to bitrate. The contained exception was: {e}", RNS.LOG_ERROR)
 
     @staticmethod
     def jobloop():
@@ -664,6 +675,7 @@ class Transport:
                     Transport.tables_last_culled = time.time()
 
                 if time.time() > Transport.interface_last_jobs + Transport.interface_jobs_interval:
+                    Transport.prioritize_interfaces()
                     for interface in Transport.interfaces:
                         interface.process_held_announces()
                     Transport.interface_last_jobs = time.time()
@@ -1724,8 +1736,28 @@ class Transport:
                 if packet.destination_type == RNS.Destination.LINK:
                     for link in Transport.active_links:
                         if link.link_id == packet.destination_hash:
-                            packet.link = link
-                            link.receive(packet)
+                            if link.attached_interface == packet.receiving_interface:
+                                packet.link = link
+                                if packet.context == RNS.Packet.CACHE_REQUEST:
+                                    cached_packet = Transport.get_cached_packet(packet.data)
+                                    if cached_packet != None:
+                                        cached_packet.unpack()
+                                        RNS.Packet(destination=link, data=cached_packet.data,
+                                                   packet_type=cached_packet.packet_type, context=cached_packet.context).send()
+
+                                    Transport.jobs_locked = False
+                                else:
+                                    link.receive(packet)
+                            else:
+                                # In the strange and rare case that an interface
+                                # is partly malfunctioning, and a link-associated
+                                # packet is being received on an interface that
+                                # has failed sending, and transport has failed over
+                                # to another path, we remove this packet hash from
+                                # the filter hashlist so the link can receive the
+                                # packet when it finally arrives over another path.
+                                while packet.packet_hash in Transport.packet_hashlist:
+                                    Transport.packet_hashlist.remove(packet.packet_hash)
                 else:
                     for destination in Transport.destinations:
                         if destination.hash == packet.destination_hash and destination.type == packet.destination_type:

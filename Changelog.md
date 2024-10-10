@@ -1,3 +1,111 @@
+### 2024-10-10: RNS β 0.8.3
+
+This release fixes a bug in resource transfer progress calculation, improves RNode error handling, and brings minor improvements to the `rncp` utility.
+
+**Changes**
+- Fixed a bug in resource transfer progress calculations
+- Added physical layer transfer rate output option to `rncp`
+- Added save directory option to `rncp`
+- Improved path handling for the fetch-jail option of of `rncp`
+- Added error detection for modem communication timeouts on connected RNode devices
+
+**Release Hashes**
+```
+54ddab32769081045db5fe45b27492cc012bf2fad64bc65ed37011f3651469fb rns-0.8.3-py3-none-any.whl
+a04915111d65b05a5f2ef2687ed208813034196c0c5e711cb01e6db72faa23ef rnspure-0.8.3-py3-none-any.whl
+```
+
+### 2024-10-06: RNS β 0.8.2
+
+This release adds several new boards to `rnodeconf`, fixes a range of bugs and improves transport reliability.
+
+Thanks to @jacobeva, @prusnak and @deavmi who contributed to this release!
+
+**Changes**
+- Added support for T-Beam Supreme devices to `rnodeconf`
+- Added support for T3S3 devices to `rnodeconf`
+- Added support for T-Deck devices to `rnodeconf`
+- Added support for new hardware error codes from connected RNodes
+- Added the ability to control the display on nRF52-based RNodes
+- Improved resource transfers over very slow links, by adding more suitable `MAX_WINDOW` cap if link speed is continously below threshold.
+- Improved `rnodeconf` flashing so manual resets for some devices are no longer required
+- Added edge case handling for receiving a link proof after the link had timed out and been closed, but before it having been purged from active links table
+- Updated supported hardware section of the manual with new boards
+- Tuned path request timing for roaming instances
+- Fixed a bug that caused RNS to fail to initialise in Termux on Android
+- Fixed a bug in RNodeInterface firmware version comparison
+- Fixed a bug in the serial framing of RNodeMultiInterface
+- Fixed a bug in sub-interface spawning of RNodeMultiInterface
+
+**Release Hashes**
+```
+db720a727a09c0c9d76288dec5a995a30146e65d6a4c5c034f47fb60a78f4962 rns-0.8.2-py3-none-any.whl
+ee412535edba48817551658247fb0c843d17e1c97cad9d2a819a7fc627c5ba28 rnspure-0.8.2-py3-none-any.whl
+```
+
+### 2024-10-02: RNS β 0.8.1
+
+This release adds BLE support to RNodeInterface, and support for configuring additional options to `rnodeconf`.
+
+**Changes**
+- Added Bluetooth Low Energy support to RNodeInterface
+- Added RNode battery information to `rnstatus` output
+- Added display blanking configuration to `rnodeconf`
+- Added NeoPixel intensity configuration to `rnodeconf`
+
+**Release Hashes**
+```
+f4b6b99b67d6b33b8a4562e5d5d5ac54c76814fff26e6c7a79950b82bd80123f rns-0.8.1-py3-none-any.whl
+c2e540b4bf0f272bb51ae3e33a02f9c07f2619746d069d7ed83d88017bf7ea30 rnspure-0.8.1-py3-none-any.whl
+```
+
+### 2024-09-25: RNS β 0.8.0
+
+This maintenance release improves the interface statistics API, and updates documentation.
+
+**Changes**
+- Added additional information to interface statistics
+- Updated documentation
+
+**Release Hashes**
+```
+fa5ff6d98230693be6805bb9a94585a6f54ec0af9cba15b771d4e676f140dc43 rns-0.8.0-py3-none-any.whl
+ba20f688b69ae861c8aced251e10242a358fea15da6c22df10d4fc8846c9bf48 rnspure-0.8.0-py3-none-any.whl
+```
+
+### 2024-09-24: RNS β 0.7.9
+
+This maintenance release improves transport reliability in certain (rare) cases.
+
+**Changes**
+- Added handling of a transport edge-case
+
+**Release Hashes**
+```
+4c20c46df021d366386d497145024396f904666b0de22a92f9e5c937886ea39d rns-0.7.9-py3-none-any.whl
+97d26282df929eca732a15523bc9d7f66387a93ffd911e8063c94c3f8f6ad73c rnspure-0.7.9-py3-none-any.whl
+```
+
+### 2024-09-18: RNS β 0.7.8
+
+This maintenance release adds support for the openCom XL to `rnodeconf`, fixes a number of bugs, and also includes a few fine-tunings of timing parameters.
+
+Thanks to @liamcottle and @jacobeva for contributing to this release!
+
+**Changes**
+- Added interface prioritisation according to reported bitrate
+- Added support for openCom XL to `rnodeconf`
+- Added performance profiler to built-in debugging tools
+- Tuned link traffic timeouts
+- Fixed a module import error in AX25KissInterface
+- Fixed a missing exception on erroneous destination initialisation
+
+**Release Hashes**
+```
+33fb9443e3b327d1a9125baa52d8ec3208a089dda62f749b819e0a94c06730f9 rns-0.7.8-py3-none-any.whl
+cdced2adef4ead146239d0510fe2b9d62f69136bcd54b22d1080686fb56f9927 rnspure-0.7.8-py3-none-any.whl
+```
+
 ### 2024-09-09: RNS β 0.7.7
 
 This release adds support for automatic encryption key ratcheting for all packets, not just those sent over Reticulum links. In practical terms, this adds forward secrecy to packets sent with the raw `Packet` API.

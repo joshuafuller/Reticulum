@@ -54,6 +54,9 @@ class Resource:
     # The maximum window size for transfers on slow links
     WINDOW_MAX_SLOW      = 10
 
+    # The maximum window size for transfers on very slow links
+    WINDOW_MAX_VERY_SLOW = 4
+
     # The maximum window size for transfers on fast links
     WINDOW_MAX_FAST      = 75
     
@@ -65,11 +68,21 @@ class Resource:
     # rounds, the fast link window size will be allowed.
     FAST_RATE_THRESHOLD  = WINDOW_MAX_SLOW - WINDOW - 2
 
+    # If the very slow rate is sustained for this many request
+    # rounds, window will be capped to the very slow limit.
+    VERY_SLOW_RATE_THRESHOLD = 2
+
     # If the RTT rate is higher than this value,
     # the max window size for fast links will be used.
     # The default is 50 Kbps (the value is stored in
     # bytes per second, hence the "/ 8").
     RATE_FAST            = (50*1000) / 8
+
+    # If the RTT rate is lower than this value,
+    # the window size will be capped at .
+    # The default is 50 Kbps (the value is stored in
+    # bytes per second, hence the "/ 8").
+    RATE_VERY_SLOW       = (2*1000) / 8
 
     # The minimum allowed flexibility of the window size.
     # The difference between window_max and window_min
@@ -105,6 +118,7 @@ class Resource:
 
     PART_TIMEOUT_FACTOR           = 4
     PART_TIMEOUT_FACTOR_AFTER_RTT = 2
+    PROOF_TIMEOUT_FACTOR          = 3
     MAX_RETRIES                   = 16
     MAX_ADV_RETRIES               = 4
     SENDER_GRACE_TIME             = 10.0
@@ -147,7 +161,7 @@ class Resource:
             resource.encrypted           = True if resource.flags & 0x01 else False
             resource.compressed          = True if resource.flags >> 1 & 0x01 else False
             resource.initiator           = False
-            resource.callback             = callback
+            resource.callback            = callback
             resource.__progress_callback = progress_callback
             resource.total_parts         = int(math.ceil(resource.size/float(Resource.SDU)))
             resource.received_count      = 0
@@ -220,7 +234,6 @@ class Resource:
                 data_size = os.stat(data.name).st_size
 
             self.total_size = data_size
-            self.grand_total_parts = math.ceil(data_size/Resource.SDU)
 
             if data_size <= Resource.MAX_EFFICIENT_SIZE:
                 self.total_segments = 1
@@ -241,7 +254,6 @@ class Resource:
 
         elif isinstance(data, bytes):
             data_size = len(data)
-            self.grand_total_parts = math.ceil(data_size/Resource.SDU)
             self.total_size  = data_size
             
             resource_data = data
@@ -275,6 +287,7 @@ class Resource:
         self.req_resp_rtt_rate = 0
         self.rtt_rxd_bytes_at_part_req = 0
         self.fast_rate_rounds = 0
+        self.very_slow_rate_rounds = 0
         self.request_id = request_id
         self.is_response = is_response
 
@@ -334,6 +347,7 @@ class Resource:
             self.size = len(self.data)
             self.sent_parts = 0
             hashmap_entries = int(math.ceil(self.size/float(Resource.SDU)))
+            self.total_parts = hashmap_entries
                 
             hashmap_ok = False
             while not hashmap_ok:
@@ -519,6 +533,10 @@ class Resource:
                         sleep_time = 0.001
 
             elif self.status == Resource.AWAITING_PROOF:
+                # Decrease timeout factor since proof packets are
+                # significantly smaller than full req/resp roundtrip
+                self.timeout_factor = Resource.PROOF_TIMEOUT_FACTOR
+
                 sleep_time = self.last_part_sent + (self.rtt*self.timeout_factor+self.sender_grace_time) - time.time()
                 if sleep_time < 0:
                     if self.retries_left <= 0:
@@ -610,6 +628,7 @@ class Resource:
                 proof_data = self.hash+proof
                 proof_packet = RNS.Packet(self.link, proof_data, packet_type=RNS.Packet.PROOF, context=RNS.Packet.RESOURCE_PRF)
                 proof_packet.send()
+                RNS.Transport.cache(proof_packet, force_cache=True)
             except Exception as e:
                 RNS.log("Could not send proof packet, cancelling resource", RNS.LOG_DEBUG)
                 RNS.log("The contained exception was: "+str(e), RNS.LOG_DEBUG)
@@ -759,6 +778,12 @@ class Resource:
                                 if self.fast_rate_rounds == Resource.FAST_RATE_THRESHOLD:
                                     self.window_max = Resource.WINDOW_MAX_FAST
 
+                            if self.fast_rate_rounds == 0 and self.req_data_rtt_rate < Resource.RATE_VERY_SLOW and self.very_slow_rate_rounds < Resource.VERY_SLOW_RATE_THRESHOLD:
+                                self.very_slow_rate_rounds += 1
+
+                                if self.very_slow_rate_rounds == Resource.VERY_SLOW_RATE_THRESHOLD:
+                                    self.window_max = Resource.WINDOW_MAX_VERY_SLOW
+
                     self.request_next()
             else:
                 self.receiving_part = False
@@ -900,6 +925,7 @@ class Resource:
 
             if self.sent_parts == len(self.parts):
                 self.status = Resource.AWAITING_PROOF
+                self.retries_left = 3
 
             if self.__progress_callback != None:
                 try:
@@ -943,19 +969,66 @@ class Resource:
         """
         if self.status == RNS.Resource.COMPLETE and self.segment_index == self.total_segments:
             return 1.0
+        
         elif self.initiator:
-            self.processed_parts  = (self.segment_index-1)*math.ceil(Resource.MAX_EFFICIENT_SIZE/Resource.SDU)
-            self.processed_parts += self.sent_parts
-            self.progress_total_parts = float(self.grand_total_parts)
-        else:
-            self.processed_parts  = (self.segment_index-1)*math.ceil(Resource.MAX_EFFICIENT_SIZE/Resource.SDU)            
-            self.processed_parts += self.received_count
-            if self.split:
-                self.progress_total_parts = float(math.ceil(self.total_size/Resource.SDU))
-            else:
+            if not self.split:
+                self.processed_parts = self.sent_parts
                 self.progress_total_parts = float(self.total_parts)
 
+            else:
+                is_last_segment = self.segment_index != self.total_segments
+                total_segments = self.total_segments
+                processed_segments = self.segment_index-1
+
+                current_segment_parts = self.total_parts
+                max_parts_per_segment = math.ceil(Resource.MAX_EFFICIENT_SIZE/Resource.SDU)
+
+                previously_processed_parts = processed_segments*max_parts_per_segment
+
+                if current_segment_parts < max_parts_per_segment:
+                    current_segment_factor = max_parts_per_segment / current_segment_parts
+                else:
+                    current_segment_factor = 1
+
+                self.processed_parts = previously_processed_parts + self.sent_parts*current_segment_factor
+                self.progress_total_parts = self.total_segments*max_parts_per_segment
+
+        else:
+            if not self.split:
+                self.processed_parts = self.received_count
+                self.progress_total_parts = float(self.total_parts)
+
+            else:
+                is_last_segment = self.segment_index != self.total_segments
+                total_segments = self.total_segments
+                processed_segments = self.segment_index-1
+
+                current_segment_parts = self.total_parts
+                max_parts_per_segment = math.ceil(Resource.MAX_EFFICIENT_SIZE/Resource.SDU)
+
+                previously_processed_parts = processed_segments*max_parts_per_segment
+
+                if current_segment_parts < max_parts_per_segment:
+                    current_segment_factor = max_parts_per_segment / current_segment_parts
+                else:
+                    current_segment_factor = 1
+
+                self.processed_parts = previously_processed_parts + self.received_count*current_segment_factor
+                self.progress_total_parts = self.total_segments*max_parts_per_segment
+
+
         progress = min(1.0, self.processed_parts / self.progress_total_parts)
+        return progress
+
+    def get_segment_progress(self):
+        if self.status == RNS.Resource.COMPLETE and self.segment_index == self.total_segments:
+            return 1.0
+        elif self.initiator:
+            processed_parts = self.sent_parts
+        else:
+            processed_parts = self.received_count
+
+        progress = min(1.0, processed_parts / self.total_parts)
         return progress
 
     def get_transfer_size(self):

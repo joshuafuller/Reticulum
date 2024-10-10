@@ -70,7 +70,7 @@ class KISS():
     CMD_INT1_DATA   = 0x10
     CMD_INT2_DATA   = 0x20
     CMD_INT3_DATA   = 0x70
-    CMD_INT4_DATA   = 0x80
+    CMD_INT4_DATA   = 0x75
     CMD_INT5_DATA   = 0x90
     CMD_INT6_DATA   = 0xA0
     CMD_INT7_DATA   = 0xB0
@@ -82,8 +82,8 @@ class KISS():
     CMD_SEL_INT0    = 0x1E
     CMD_SEL_INT1    = 0x1F
     CMD_SEL_INT2    = 0x2F
-    CMD_SEL_INT3    = 0x7F
-    CMD_SEL_INT4    = 0x8F
+    CMD_SEL_INT3    = 0x74
+    CMD_SEL_INT4    = 0x7F
     CMD_SEL_INT5    = 0x9F
     CMD_SEL_INT6    = 0xAF
     CMD_SEL_INT7    = 0xBF
@@ -106,6 +106,7 @@ class KISS():
 
     PLATFORM_AVR   = 0x90
     PLATFORM_ESP32 = 0x80
+    PLATFORM_NRF52 = 0x70
 
     SX127X    = 0x00
     SX1276    = 0x01
@@ -166,7 +167,7 @@ class RNodeMultiInterface(Interface):
     CALLSIGN_MAX_LEN    = 32
 
     REQUIRED_FW_VER_MAJ = 1
-    REQUIRED_FW_VER_MIN = 73
+    REQUIRED_FW_VER_MIN = 74
 
     RECONNECT_WAIT = 5
 
@@ -249,6 +250,7 @@ class RNodeMultiInterface(Interface):
         if (not self.validcfg):
             raise ValueError("The configuration for "+str(self)+" contains errors, interface is offline")
 
+    def start(self):
         try:
             self.open_port()
 
@@ -297,7 +299,7 @@ class RNodeMultiInterface(Interface):
             RNS.log("Could not detect device for "+str(self), RNS.LOG_ERROR)
             self.serial.close()
         else:
-            if self.platform == KISS.PLATFORM_ESP32:
+            if self.platform == KISS.PLATFORM_ESP32 or self.platform == KISS.PLATFORM_NRF52:
                 self.display = True
 
         RNS.log("Serial port "+self.port+" is now open")
@@ -323,8 +325,8 @@ class RNodeMultiInterface(Interface):
                         lt_alock=subint[9]
                 )
 
-                interface.OUT = self.OUT
-                interface.IN  = self.IN
+                interface.OUT = subint[10]
+                interface.IN  = True
                 
                 interface.announce_rate_target = self.announce_rate_target
                 interface.mode = self.mode
@@ -1005,6 +1007,11 @@ class RNodeSubInterface(Interface):
         self.interface_ready = False
         self.parent_interface = parent_interface
         self.announce_rate_target = None
+
+        self.mode = None
+        self.announce_cap = None
+        self.bitrate = None
+        self.ifac_size = None
 
         # add this interface to the subinterfaces array
         self.parent_interface.subinterfaces[index] = self

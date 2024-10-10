@@ -270,6 +270,53 @@ def prettytime(time, verbose=False, compact=False):
     else:
         return tstr
 
+def prettyshorttime(time, verbose=False, compact=False):
+    time = time*1e6
+    
+    seconds = int(time // 1e6); time %= 1e6
+    milliseconds = int(time // 1e3); time %= 1e3
+
+    if compact:
+        microseconds = int(time)
+    else:
+        microseconds = round(time, 2)
+    
+    ss = "" if seconds == 1 else "s"
+    sms = "" if milliseconds == 1 else "s"
+    sus = "" if microseconds == 1 else "s"
+
+    displayed = 0
+    components = []
+    if seconds > 0 and ((not compact) or displayed < 2):
+        components.append(str(seconds)+" second"+ss if verbose else str(seconds)+"s")
+        displayed += 1
+
+    if milliseconds > 0 and ((not compact) or displayed < 2):
+        components.append(str(milliseconds)+" millisecond"+sms if verbose else str(milliseconds)+"ms")
+        displayed += 1
+
+    if microseconds > 0 and ((not compact) or displayed < 2):
+        components.append(str(microseconds)+" microsecond"+sus if verbose else str(microseconds)+"µs")
+        displayed += 1
+
+    i = 0
+    tstr = ""
+    for c in components:
+        i += 1
+        if i == 1:
+            pass
+        elif i < len(components):
+            tstr += ", "
+        elif i == len(components):
+            tstr += " and "
+
+        tstr += c
+
+    if tstr == "":
+        return "0us"
+    else:
+        return tstr
+
 def phyparams():
     print("Required Physical Layer MTU : "+str(Reticulum.MTU)+" bytes")
     print("Plaintext Packet MDU        : "+str(Packet.PLAIN_MDU)+" bytes")
@@ -285,3 +332,94 @@ def panic():
 def exit():
     print("")
     sys.exit(0)
+
+
+profiler_ran = False
+profiler_tags = {}
+def profiler(tag=None, capture=False, super_tag=None):
+    global profiler_ran, profiler_tags
+    try:
+        thread_ident = threading.get_ident()
+
+        if capture:
+            end = time.perf_counter()
+            if tag in profiler_tags and thread_ident in profiler_tags[tag]["threads"]:
+                if profiler_tags[tag]["threads"][thread_ident]["current_start"] != None:
+                    begin = profiler_tags[tag]["threads"][thread_ident]["current_start"]
+                    profiler_tags[tag]["threads"][thread_ident]["current_start"] = None
+                    profiler_tags[tag]["threads"][thread_ident]["captures"].append(end-begin)
+                    if not profiler_ran:
+                        profiler_ran = True
+
+        else:
+            if not tag in profiler_tags:
+                profiler_tags[tag] = {"threads": {}, "super": super_tag}
+            if not thread_ident in profiler_tags[tag]["threads"]:
+                profiler_tags[tag]["threads"][thread_ident] = {"current_start": None, "captures": []}
+
+            profiler_tags[tag]["threads"][thread_ident]["current_start"] = time.perf_counter()
+
+    except Exception as e:
+        trace_exception(e)
+
+def profiler_results():
+    from statistics import mean, median, stdev
+    results = {}
+    
+    for tag in profiler_tags:
+        tag_captures = []
+        tag_entry = profiler_tags[tag]
+        
+        for thread_ident in tag_entry["threads"]:
+            thread_entry = tag_entry["threads"][thread_ident]
+            thread_captures = thread_entry["captures"]
+            sample_count = len(thread_captures)
+            
+            if sample_count > 2:
+                thread_results = {
+                    "count": sample_count,
+                    "mean": mean(thread_captures),
+                    "median": median(thread_captures),
+                    "stdev": stdev(thread_captures)
+                }
+
+            tag_captures.extend(thread_captures)
+
+        sample_count = len(tag_captures)
+        if sample_count > 2:
+            tag_results = {
+                "name": tag,
+                "super": tag_entry["super"],
+                "count": len(tag_captures),
+                "mean": mean(tag_captures),
+                "median": median(tag_captures),
+                "stdev": stdev(tag_captures)
+            }
+
+            results[tag] = tag_results
+
+    def print_results_recursive(tag, results, level=0):
+        print_tag_results(tag, level+1)
+
+        for tag_name in results:
+            sub_tag = results[tag_name]
+            if sub_tag["super"] == tag["name"]:
+                print_results_recursive(sub_tag, results, level=level+1)
+
+
+    def print_tag_results(tag, level):
+        ind = "  "*level
+        name = tag["name"]; count = tag["count"]
+        mean = tag["mean"]; tag["median"]; stdev = tag["stdev"]
+        print(f"{ind}{name}")
+        print(f"{ind}  Samples : {count}")
+        print(f"{ind}  Mean    : {prettyshorttime(mean)}")
+        print(f"{ind}  Median  : {prettyshorttime(median)}")
+        print(f"{ind}  St.dev. : {prettyshorttime(stdev)}")
+        print("")
+
+    print("\nProfiler results:\n")
+    for tag_name in results:
+        tag = results[tag_name]
+        if tag["super"] == None:
+            print_results_recursive(tag, results)

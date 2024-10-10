@@ -41,7 +41,7 @@ import RNS
 RNS.logtimefmt      = "%H:%M:%S"
 RNS.compact_log_fmt = True
 
-program_version = "2.1.3"
+program_version = "2.2.0"
 eth_addr = "0xFDabC71AC4c0C78C95aDDDe3B4FA19d6273c5E73"
 btc_addr = "35G9uWVzrpJJibzUwpNUQGQNFzLirhrYAH"
 xmr_addr = "87HcDx6jRSkMQ9nPRd5K9hGGpZLn2s7vWETjMaVM5KfV4TD36NcYa8J8WSxhTSvBzzFpqDwp2fg5GX2moZ7VAP9QMZCZGET"
@@ -81,7 +81,9 @@ class KISS():
     CMD_BLINK       = 0x30
     CMD_RANDOM      = 0x40
     CMD_DISP_INT    = 0x45
+    CMD_NP_INT      = 0x65
     CMD_DISP_ADR    = 0x63
+    CMD_DISP_BLNK   = 0x64
     CMD_BT_CTRL     = 0x46
     CMD_BT_PIN      = 0x62
     CMD_BOARD       = 0x47
@@ -137,6 +139,8 @@ class ROM():
     MODEL_A8       = 0xA8
     MODEL_A2       = 0xA2
     MODEL_A7       = 0xA7
+    MODEL_A5       = 0xA5
+    MODEL_AA       = 0xAA
 
     PRODUCT_T32_10 = 0xB2
     MODEL_BA       = 0xBA
@@ -166,6 +170,14 @@ class ROM():
     MODEL_E9       = 0xE9
     MODEL_E3       = 0xE3
     MODEL_E8       = 0xE8
+
+    PRODUCT_TBEAM_S_V1= 0xEA
+    MODEL_DB          = 0xDB
+    MODEL_DC          = 0xDC
+
+    PRODUCT_TDECK  = 0xD0
+    MODEL_D4       = 0xD4
+    MODEL_D9       = 0xD9
 
     PRODUCT_RAK4631 = 0x10
     MODEL_11       = 0x11
@@ -205,6 +217,7 @@ class ROM():
     BOARD_RNODE         = 0x31
     BOARD_HMBRW         = 0x32
     BOARD_TBEAM         = 0x33
+    BOARD_TDECK         = 0x3B
     BOARD_HUZZAH32      = 0x34
     BOARD_GENERIC_ESP32 = 0x35
     BOARD_LORA32_V2_0   = 0x36
@@ -212,13 +225,15 @@ class ROM():
     BOARD_TECHO         = 0x43
     BOARD_RAK4631       = 0x51
 
-    MANUAL_FLASH_MODELS = [MODEL_A1, MODEL_A6]
+    MANUAL_FLASH_MODELS = []
 
 mapped_product = ROM.PRODUCT_RNODE
 products = {
     ROM.PRODUCT_RNODE:  "RNode",
     ROM.PRODUCT_HMBRW:  "Hombrew RNode",
     ROM.PRODUCT_TBEAM:  "LilyGO T-Beam",
+    ROM.PRODUCT_TBEAM_S_V1:"LilyGO T-Beam Supreme",
+    ROM.PRODUCT_TDECK:  "LilyGO T-Deck",
     ROM.PRODUCT_T32_10: "LilyGO LoRa32 v1.0",
     ROM.PRODUCT_T32_20: "LilyGO LoRa32 v2.0",
     ROM.PRODUCT_T32_21: "LilyGO LoRa32 v2.1",
@@ -247,6 +262,8 @@ models = {
     0xA9: [820000000, 1020000000, 17, "820 - 1020 MHz", "rnode_firmware.hex", "SX1276"],
     0xA1: [410000000, 525000000, 22, "410 - 525 MHz", "rnode_firmware_t3s3.zip", "SX1268"],
     0xA6: [820000000, 1020000000, 22, "820 - 960 MHz", "rnode_firmware_t3s3.zip", "SX1262"],
+    0xA5: [410000000, 525000000, 17, "410 - 525 MHz", "rnode_firmware_t3s3_sx127x.zip", "SX1278"],
+    0xAA: [820000000, 1020000000, 17, "820 - 960 MHz", "rnode_firmware_t3s3_sx127x.zip", "SX1276"],
     0xA2: [410000000, 525000000, 17, "410 - 525 MHz", "rnode_firmware_ng21.zip", "SX1278"],
     0xA7: [820000000, 1020000000, 17, "820 - 1020 MHz", "rnode_firmware_ng21.zip", "SX1276"],
     0xA3: [410000000, 525000000, 17, "410 - 525 MHz", "rnode_firmware_ng20.zip", "SX1278"],
@@ -261,16 +278,20 @@ models = {
     0xBB: [850000000, 950000000, 17, "850 - 950 MHz", "rnode_firmware_lora32v10.zip", "SX1276"],
     0xC4: [420000000, 520000000, 17, "420 - 520 MHz", "rnode_firmware_heltec32v2.zip", "SX1278"],
     0xC9: [850000000, 950000000, 17, "850 - 950 MHz", "rnode_firmware_heltec32v2.zip", "SX1276"],
-    0xC5: [470000000, 510000000, 21, "470 - 510 MHz", "rnode_firmware_heltec32v3.zip", "SX1262"],
-    0xCA: [863000000, 928000000, 21, "863 - 928 MHz", "rnode_firmware_heltec32v3.zip", "SX1262"],
+    0xC5: [420000000, 520000000, 21, "420 - 520 MHz", "rnode_firmware_heltec32v3.zip", "SX1262"],
+    0xCA: [850000000, 950000000, 21, "850 - 950 MHz", "rnode_firmware_heltec32v3.zip", "SX1262"],
     0xE4: [420000000, 520000000, 17, "420 - 520 MHz", "rnode_firmware_tbeam.zip", "SX1278"],
     0xE9: [850000000, 950000000, 17, "850 - 950 MHz", "rnode_firmware_tbeam.zip", "SX1276"],
+    0xD4: [420000000, 520000000, 22, "420 - 520 MHz", "rnode_firmware_tdeck.zip", "SX1268"],
+    0xD9: [850000000, 950000000, 22, "850 - 950 MHz", "rnode_firmware_tdeck.zip", "SX1262"],
+    0xDB: [420000000, 520000000, 22, "420 - 520 MHz", "rnode_firmware_tbeam_supreme.zip", "SX1268"],
+    0xDC: [850000000, 950000000, 22, "850 - 950 MHz", "rnode_firmware_tbeam_supreme.zip", "SX1262"],
     0xE3: [420000000, 520000000, 22, "420 - 520 MHz", "rnode_firmware_tbeam_sx1262.zip", "SX1268"],
     0xE8: [850000000, 950000000, 22, "850 - 950 MHz", "rnode_firmware_tbeam_sx1262.zip", "SX1262"],
     0x11: [430000000, 510000000, 22, "430 - 510 MHz", "rnode_firmware_rak4631.zip", "SX1262"],
     0x12: [779000000, 928000000, 22, "779 - 928 MHz", "rnode_firmware_rak4631.zip", "SX1262"],
-    0x11: [430000000, 510000000, 22, "430 - 510 MHz", "rnode_firmware_rak4631_sx1280.zip", "SX1262 + SX1280"],
-    0x12: [779000000, 928000000, 22, "779 - 928 MHz", "rnode_firmware_rak4631_sx1280.zip", "SX1262 + SX1280"],
+    0x13: [430000000, 510000000, 22, "430 - 510 MHz", "rnode_firmware_rak4631_sx1280.zip", "SX1262 + SX1280"],
+    0x14: [779000000, 928000000, 22, "779 - 928 MHz", "rnode_firmware_rak4631_sx1280.zip", "SX1262 + SX1280"],
     0x16: [779000000, 928000000, 22, "430 - 510 Mhz", "rnode_firmware_techo.zip", "SX1262"],
     0x17: [779000000, 928000000, 22, "779 - 928 Mhz", "rnode_firmware_techo.zip", "SX1262"],
     0x21: [820000000, 960000000, 22, "820 - 960 MHz", "rnode_firmware_opencom_xl.zip", "SX1262 + SX1280"],
@@ -636,6 +657,20 @@ class RNode():
         written = self.serial.write(kiss_command)
         if written != len(kiss_command):
             raise IOError("An IO error occurred while sending display intensity command to device")
+
+    def set_display_blanking(self, blanking_timeout):
+        data = bytes([blanking_timeout & 0xFF])
+        kiss_command = bytes([KISS.FEND])+bytes([KISS.CMD_DISP_BLNK])+data+bytes([KISS.FEND])
+        written = self.serial.write(kiss_command)
+        if written != len(kiss_command):
+            raise IOError("An IO error occurred while sending display blanking timeout command to device")
+
+    def set_neopixel_intensity(self, intensity):
+        data = bytes([intensity & 0xFF])
+        kiss_command = bytes([KISS.FEND])+bytes([KISS.CMD_NP_INT])+data+bytes([KISS.FEND])
+        written = self.serial.write(kiss_command)
+        if written != len(kiss_command):
+            raise IOError("An IO error occurred while sending NeoPixel intensity command to device")
 
     def set_display_address(self, address):
         data = bytes([address & 0xFF])
@@ -1159,6 +1194,7 @@ def ensure_firmware_file(fw_filename):
                         pass
                     else:
                         RNS.log("")
+                        RNS.log(f"Firmware hash {file_hash} but should be {selected_hash}, possibly due to download corruption.")
                         RNS.log("Firmware corrupt. Try clearing the local firmware cache with: rnodeconf --clear-cache")
                         graceful_exit(96)
 
@@ -1261,7 +1297,10 @@ def main():
         parser.add_argument("-p", "--bluetooth-pair", action="store_true", help="Put device into bluetooth pairing mode")
 
         parser.add_argument("-D", "--display", action="store", metavar="i", type=int, default=None, help="Set display intensity (0-255)")
+        parser.add_argument("-t", "--timeout", action="store", metavar="s", type=int, default=None, help="Set display timeout in seconds, 0 to disable")
         parser.add_argument("--display-addr", action="store", metavar="byte", type=str, default=None, help="Set display address as hex byte (00 - FF)")
+
+        parser.add_argument("--np", action="store", metavar="i", type=int, default=None, help="Set NeoPixel intensity (0-255)")
 
         parser.add_argument("--freq", action="store", metavar="Hz", type=int, default=None, help="Frequency in Hz for TNC mode")
         parser.add_argument("--bw", action="store", metavar="Hz", type=int, default=None, help="Bandwidth in Hz for TNC mode")
@@ -1621,6 +1660,8 @@ def main():
             print("[9] LilyGO LoRa T3S3")
             print("[10] RAK4631")
             print("[11] LilyGo T-Echo")
+            print("[12] LilyGO T-Beam Supreme")
+            print("[13] LilyGO T-Deck")
             print("       .")
             print("      / \\   Select one of these options if you want to easily turn")
             print("       |    a supported development board into an RNode.")
@@ -1632,7 +1673,7 @@ def main():
             try:
                 c_dev = int(input())
                 c_mod = False
-                if c_dev < 1 or c_dev > 11:
+                if c_dev < 1 or c_dev > 13:
                     raise ValueError()
                 elif c_dev == 1:
                     selected_product = ROM.PRODUCT_RNODE
@@ -1662,6 +1703,38 @@ def main():
                     print("")
                     print("The RNode firmware can currently be installed on T-Beam devices using the")
                     print("SX1276, SX1278, SX1262 and SX1268 transceiver chips.")
+                    print("")
+                    print("Important! Using RNode firmware on T-Beam devices should currently be")
+                    print("considered experimental. It is not intended for production or critical use.")
+                    print("The currently supplied firmware is provided AS-IS as a courtesey to those")
+                    print("who would like to experiment with it. Hit enter to continue.")
+                    print("---------------------------------------------------------------------------")
+                    input()
+                elif c_dev == 12:
+                    selected_product = ROM.PRODUCT_TBEAM_S_V1
+                    clear()
+                    print("")
+                    print("---------------------------------------------------------------------------")
+                    print("                       T-Beam Supreme RNode Installer")
+                    print("")
+                    print("The RNode firmware can currently be installed on T-Beam Supreme devices")
+                    print("using the SX1262 and SX1268 transceiver chips.")
+                    print("")
+                    print("Important! Using RNode firmware on T-Beam devices should currently be")
+                    print("considered experimental. It is not intended for production or critical use.")
+                    print("The currently supplied firmware is provided AS-IS as a courtesey to those")
+                    print("who would like to experiment with it. Hit enter to continue.")
+                    print("---------------------------------------------------------------------------")
+                    input()
+                elif c_dev == 13:
+                    selected_product = ROM.PRODUCT_TDECK
+                    clear()
+                    print("")
+                    print("---------------------------------------------------------------------------")
+                    print("                            T-Deck RNode Installer")
+                    print("")
+                    print("The RNode firmware can currently be installed on T-Deck devices using the")
+                    print("SX1262 and SX1268 transceiver chips.")
                     print("")
                     print("Important! Using RNode firmware on T-Beam devices should currently be")
                     print("considered experimental. It is not intended for production or critical use.")
@@ -1739,8 +1812,6 @@ def main():
                     print("Important! Using RNode firmware on T3S3 devices should currently be")
                     print("considered experimental. It is not intended for production or critical use.")
                     print("")
-                    print("Please note that Bluetooth is currently not implemented on this board.")
-                    print("")
                     print("The currently supplied firmware is provided AS-IS as a courtesey to those")
                     print("who would like to experiment with it. Hit enter to continue.")
                     print("---------------------------------------------------------------------------")
@@ -1754,8 +1825,6 @@ def main():
                     print("")
                     print("Important! Using RNode firmware on Heltec devices should currently be")
                     print("considered experimental. It is not intended for production or critical use.")
-                    print("")
-                    print("Please note that Bluetooth is currently not implemented on this board.")
                     print("")
                     print("The currently supplied firmware is provided AS-IS as a courtesey to those")
                     print("who would like to experiment with it. Hit enter to continue.")
@@ -1889,19 +1958,30 @@ def main():
                         print("That model does not exist, exiting now.")
                         graceful_exit()
                 else:
-                    print("\nWhat model is this T3S3?\n")
-                    print("[1] 410 - 525 MHz (with SX1268 chip)")
-                    print("[2] 820 - 1020 MHz (with SX1262 chip)")
+                    print("\nWhat band is this T3S3 for?\n")
+                    print("[1] 433 MHz         (with SX1278 chip)")
+                    print("[2] 868/915/923 MHz (with SX1276 chip)")
+                    print("");
+                    print("[3] 433 MHz         (with SX1268 chip)")
+                    print("[4] 868/915/923 MHz (with SX1262 chip)")
                     print("\n? ", end="")
                     try:
                         c_model = int(input())
-                        if c_model < 1 or c_model > 2:
+                        if c_model < 1 or c_model > 4:
                             raise ValueError()
                         elif c_model == 1:
-                            selected_model = ROM.MODEL_A1
+                            selected_model = ROM.MODEL_A5
                             selected_mcu = ROM.MCU_ESP32
                             selected_platform = ROM.PLATFORM_ESP32
                         elif c_model == 2:
+                            selected_model = ROM.MODEL_AA
+                            selected_mcu = ROM.MCU_ESP32
+                            selected_platform = ROM.PLATFORM_ESP32
+                        elif c_model == 3:
+                            selected_model = ROM.MODEL_A1
+                            selected_mcu = ROM.MCU_ESP32
+                            selected_platform = ROM.PLATFORM_ESP32
+                        elif c_model == 4:
                             selected_model = ROM.MODEL_A6
                             selected_mcu = ROM.MCU_ESP32
                             selected_platform = ROM.PLATFORM_ESP32
@@ -1933,6 +2013,46 @@ def main():
                         selected_platform = ROM.PLATFORM_ESP32
                     elif c_model == 4:
                         selected_model = ROM.MODEL_E8
+                        selected_platform = ROM.PLATFORM_ESP32
+                except Exception as e:
+                    print("That band does not exist, exiting now.")
+                    graceful_exit()
+
+            elif selected_product == ROM.PRODUCT_TBEAM_S_V1:
+                selected_mcu = ROM.MCU_ESP32
+                print("\nWhat band is this T-Beam Supreme for?\n")
+                print("[1] 433 MHz         (with SX1268 chip)")
+                print("[2] 868/915/923 MHz (with SX1262 chip)")
+                print("\n? ", end="")
+                try:
+                    c_model = int(input())
+                    if c_model < 1 or c_model > 2:
+                        raise ValueError()
+                    elif c_model == 1:
+                        selected_model = ROM.MODEL_DB
+                        selected_platform = ROM.PLATFORM_ESP32
+                    elif c_model == 2:
+                        selected_model = ROM.MODEL_DC
+                        selected_platform = ROM.PLATFORM_ESP32
+                except Exception as e:
+                    print("That band does not exist, exiting now.")
+                    graceful_exit()
+
+            elif selected_product == ROM.PRODUCT_TDECK:
+                selected_mcu = ROM.MCU_ESP32
+                print("\nWhat band is this T-Deck for?\n")
+                print("[1] 433 MHz         (with SX1268 chip)")
+                print("[2] 868/915/923 MHz (with SX1262 chip)")
+                print("\n? ", end="")
+                try:
+                    c_model = int(input())
+                    if c_model < 1 or c_model > 2:
+                        raise ValueError()
+                    elif c_model == 1:
+                        selected_model = ROM.MODEL_D4
+                        selected_platform = ROM.PLATFORM_ESP32
+                    elif c_model == 2:
+                        selected_model = ROM.MODEL_D9
                         selected_platform = ROM.PLATFORM_ESP32
                 except Exception as e:
                     print("That band does not exist, exiting now.")
@@ -2770,6 +2890,60 @@ def main():
                             "0x210000",UPD_DIR+"/"+selected_version+"/console_image.bin",
                             "0x8000",  UPD_DIR+"/"+selected_version+"/rnode_firmware_t3s3.partitions",
                         ]
+                    elif fw_filename == "rnode_firmware_t3s3_sx127x.zip":
+                        return [
+                            sys.executable, flasher,
+                            "--chip", "esp32s3",
+                            "--port", args.port,
+                            "--baud", args.baud_flash,
+                            "--before", "default_reset",
+                            "--after", "hard_reset",
+                            "write_flash", "-z",
+                            "--flash_mode", "dio",
+                            "--flash_freq", "80m",
+                            "--flash_size", "4MB",
+                            "0xe000",  UPD_DIR+"/"+selected_version+"/rnode_firmware_t3s3_sx127x.boot_app0",
+                            "0x0",  UPD_DIR+"/"+selected_version+"/rnode_firmware_t3s3_sx127x.bootloader",
+                            "0x10000", UPD_DIR+"/"+selected_version+"/rnode_firmware_t3s3_sx127x.bin",
+                            "0x210000",UPD_DIR+"/"+selected_version+"/console_image.bin",
+                            "0x8000",  UPD_DIR+"/"+selected_version+"/rnode_firmware_t3s3_sx127x.partitions",
+                        ]
+                    elif fw_filename == "rnode_firmware_tbeam_supreme.zip":
+                        return [
+                            sys.executable, flasher,
+                            "--chip", "esp32s3",
+                            "--port", args.port,
+                            "--baud", args.baud_flash,
+                            "--before", "default_reset",
+                            "--after", "hard_reset",
+                            "write_flash", "-z",
+                            "--flash_mode", "dio",
+                            "--flash_freq", "80m",
+                            "--flash_size", "4MB",
+                            "0xe000",  UPD_DIR+"/"+selected_version+"/rnode_firmware_tbeam_supreme.boot_app0",
+                            "0x0",  UPD_DIR+"/"+selected_version+"/rnode_firmware_tbeam_supreme.bootloader",
+                            "0x10000", UPD_DIR+"/"+selected_version+"/rnode_firmware_tbeam_supreme.bin",
+                            "0x210000",UPD_DIR+"/"+selected_version+"/console_image.bin",
+                            "0x8000",  UPD_DIR+"/"+selected_version+"/rnode_firmware_tbeam_supreme.partitions",
+                        ]
+                    elif fw_filename == "rnode_firmware_tdeck.zip":
+                        return [
+                            sys.executable, flasher,
+                            "--chip", "esp32s3",
+                            "--port", args.port,
+                            "--baud", args.baud_flash,
+                            "--before", "default_reset",
+                            "--after", "hard_reset",
+                            "write_flash", "-z",
+                            "--flash_mode", "dio",
+                            "--flash_freq", "80m",
+                            "--flash_size", "4MB",
+                            "0xe000",  UPD_DIR+"/"+selected_version+"/rnode_firmware_tdeck.boot_app0",
+                            "0x0",  UPD_DIR+"/"+selected_version+"/rnode_firmware_tdeck.bootloader",
+                            "0x10000", UPD_DIR+"/"+selected_version+"/rnode_firmware_tdeck.bin",
+                            "0x210000",UPD_DIR+"/"+selected_version+"/console_image.bin",
+                            "0x8000",  UPD_DIR+"/"+selected_version+"/rnode_firmware_tdeck.partitions",
+                        ]
                     elif fw_filename == "extracted_rnode_firmware.zip":
                         return [
                             sys.executable, flasher,
@@ -3167,6 +3341,27 @@ def main():
                     di = 255
                 RNS.log("Setting display intensity to "+str(di))
                 rnode.set_display_intensity(di)
+
+            if isinstance(args.timeout, int):
+                di = args.timeout
+                if di < 0:
+                    di = 0
+                if di > 255:
+                    di = 255
+                if di == 0:
+                    RNS.log("Disabling display blanking")
+                else:
+                    RNS.log("Setting display timeout to "+str(di))
+                rnode.set_display_blanking(di)
+
+            if isinstance(args.np, int):
+                di = args.np
+                if di < 0:
+                    di = 0
+                if di > 255:
+                    di = 255
+                RNS.log("Setting NeoPixel intensity to "+str(di))
+                rnode.set_neopixel_intensity(di)
 
             if isinstance(args.display_addr, str):
                 set_addr = False

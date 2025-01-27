@@ -5,6 +5,7 @@
 ##########################################################
 
 import argparse
+import sys
 import RNS
 
 # Let's define an app name. We'll use this for all
@@ -25,9 +26,6 @@ def server(configpath):
 
     # We must first initialise Reticulum
     reticulum = RNS.Reticulum(configpath)
-
-    # TODO: Remove
-    RNS.loglevel = RNS.LOG_DEBUG
     
     # Randomly create a new identity for our echo server
     server_identity = RNS.Identity()
@@ -141,7 +139,7 @@ def client(destination_hexhash, configpath, timeout=None):
     except Exception as e:
         RNS.log("Invalid destination entered. Check your input!")
         RNS.log(str(e)+"\n")
-        exit()
+        sys.exit(0)
 
     # We must first initialise Reticulum
     reticulum = RNS.Reticulum(configpath)
@@ -340,4 +338,4 @@ if __name__ == "__main__":
                 client(args.destination, configarg, timeout=timeoutarg)
     except KeyboardInterrupt:
         print("")
-        exit()
+        sys.exit(0)

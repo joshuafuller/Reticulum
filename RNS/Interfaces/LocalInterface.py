@@ -52,14 +52,12 @@ class ThreadingTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
 
 class LocalClientInterface(Interface):
     RECONNECT_WAIT = 8
+    AUTOCONFIGURE_MTU = True
 
     def __init__(self, owner, name, target_port = None, connected_socket=None):
         super().__init__()
 
-        # TODO: Remove at some point
-        # self.rxptime = 0
-        
-        self.HW_MTU = 1064
+        self.HW_MTU = 262144
 
         self.online  = False
         
@@ -89,7 +87,7 @@ class LocalClientInterface(Interface):
             self.connect()
 
         self.owner   = owner
-        self.bitrate = 1000*1000*1000
+        self.bitrate = 1_000_000_000
         self.online  = True
         self.writing = False
 
@@ -157,14 +155,11 @@ class LocalClientInterface(Interface):
         if hasattr(self, "parent_interface") and self.parent_interface != None:
             self.parent_interface.rxb += len(data)
         
-        # TODO: Remove at some point
-        # processing_start = time.time()
-        
-        self.owner.inbound(data, self)
-
-        # TODO: Remove at some point
-        # duration = time.time() - processing_start
-        # self.rxptime += duration
+        try:
+            self.owner.inbound(data, self)
+        except Exception as e:
+            RNS.log(f"An error in the processing of an incoming frame for {self}: {e}", RNS.LOG_ERROR)
+            RNS.trace_exception(e)
 
     def process_outgoing(self, data):
         if self.online:
@@ -190,6 +185,7 @@ class LocalClientInterface(Interface):
             except Exception as e:
                 RNS.log("Exception occurred while transmitting via "+str(self)+", tearing down interface", RNS.LOG_ERROR)
                 RNS.log("The contained exception was: "+str(e), RNS.LOG_ERROR)
+                RNS.trace_exception(e)
                 self.teardown()
 
 
@@ -197,32 +193,31 @@ class LocalClientInterface(Interface):
         try:
             in_frame = False
             escape = False
+            frame_buffer = b""
+            data_in = b""
             data_buffer = b""
 
             while True:
                 data_in = self.socket.recv(4096)
                 if len(data_in) > 0:
-                    pointer = 0
-                    while pointer < len(data_in):
-                        byte = data_in[pointer]
-                        pointer += 1
-                        if (in_frame and byte == HDLC.FLAG):
-                            in_frame = False
-                            self.process_incoming(data_buffer)
-                        elif (byte == HDLC.FLAG):
-                            in_frame = True
-                            data_buffer = b""
-                        elif (in_frame and len(data_buffer) < self.HW_MTU):
-                            if (byte == HDLC.ESC):
-                                escape = True
+                    frame_buffer += data_in
+                    flags_remaining = True
+                    while flags_remaining:
+                        frame_start = frame_buffer.find(HDLC.FLAG)
+                        if frame_start != -1:
+                            frame_end = frame_buffer.find(HDLC.FLAG, frame_start+1)
+                            if frame_end != -1:
+                                frame = frame_buffer[frame_start+1:frame_end]
+                                frame = frame.replace(bytes([HDLC.ESC, HDLC.FLAG ^ HDLC.ESC_MASK]), bytes([HDLC.FLAG]))
+                                frame = frame.replace(bytes([HDLC.ESC, HDLC.ESC  ^ HDLC.ESC_MASK]), bytes([HDLC.ESC]))
+                                if len(frame) > RNS.Reticulum.HEADER_MINSIZE:
+                                    self.process_incoming(frame)
+                                frame_buffer = frame_buffer[frame_end:]
                             else:
-                                if (escape):
-                                    if (byte == HDLC.FLAG ^ HDLC.ESC_MASK):
-                                        byte = HDLC.FLAG
-                                    if (byte == HDLC.ESC  ^ HDLC.ESC_MASK):
-                                        byte = HDLC.ESC
-                                    escape = False
-                                data_buffer = data_buffer+bytes([byte])
+                                flags_remaining = False
+                        else:
+                            flags_remaining = False
+
                 else:
                     self.online = False
                     if self.is_connected_to_shared_instance and not self.detached:
@@ -249,12 +244,14 @@ class LocalClientInterface(Interface):
                     self.detached = True
                     
                     try:
-                        self.socket.shutdown(socket.SHUT_RDWR)
+                        if self.socket != None:
+                            self.socket.shutdown(socket.SHUT_RDWR)
                     except Exception as e:
                         RNS.log("Error while shutting down socket for "+str(self)+": "+str(e))
 
                     try:
-                        self.socket.close()
+                        if self.socket != None:
+                            self.socket.close()
                     except Exception as e:
                         RNS.log("Error while closing socket for "+str(self)+": "+str(e))
 
@@ -292,6 +289,7 @@ class LocalClientInterface(Interface):
 
 
 class LocalServerInterface(Interface):
+    AUTOCONFIGURE_MTU = True
 
     def __init__(self, owner, bindport=None):
         super().__init__()
@@ -319,6 +317,7 @@ class LocalServerInterface(Interface):
             address = (self.bind_ip, self.bind_port)
 
             self.server = ThreadingTCPServer(address, handlerFactory(self.incoming_connection))
+            self.server.daemon_threads = True
 
             thread = threading.Thread(target=self.server.serve_forever)
             thread.daemon = True

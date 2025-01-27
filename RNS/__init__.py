@@ -24,6 +24,7 @@ import os
 import sys
 import glob
 import time
+import datetime
 import random
 import threading
 
@@ -68,6 +69,7 @@ logfile         = None
 logdest         = LOG_STDOUT
 logcall         = None
 logtimefmt      = "%Y-%m-%d %H:%M:%S"
+logtimefmt_p    = "%H:%M:%S.%f"
 compact_log_fmt = False
 
 instance_random = random.Random()
@@ -79,21 +81,21 @@ logging_lock = threading.Lock()
 
 def loglevelname(level):
     if (level == LOG_CRITICAL):
-        return "Critical"
+        return "[Critical]"
     if (level == LOG_ERROR):
-        return "Error"
+        return "[Error]   "
     if (level == LOG_WARNING):
-        return "Warning"
+        return "[Warning] "
     if (level == LOG_NOTICE):
-        return "Notice"
+        return "[Notice]  "
     if (level == LOG_INFO):
-        return "Info"
+        return "[Info]    "
     if (level == LOG_VERBOSE):
-        return "Verbose"
+        return "[Verbose] "
     if (level == LOG_DEBUG):
-        return "Debug"
+        return "[Debug]   "
     if (level == LOG_EXTREME):
-        return "Extra"
+        return "[Extra]   "
     
     return "Unknown"
 
@@ -108,51 +110,51 @@ def timestamp_str(time_s):
     timestamp = time.localtime(time_s)
     return time.strftime(logtimefmt, timestamp)
 
-def log(msg, level=3, _override_destination = False):
+def precise_timestamp_str(time_s):
+    return datetime.datetime.now().strftime(logtimefmt_p)[:-3]
+
+def log(msg, level=3, _override_destination = False, pt=False):
     global _always_override_destination, compact_log_fmt
     msg = str(msg)
     if loglevel >= level:
-        if not compact_log_fmt:
-            logstring = "["+timestamp_str(time.time())+"] ["+loglevelname(level)+"] "+msg
+        if pt:
+            logstring = "["+precise_timestamp_str(time.time())+"] "+loglevelname(level)+" "+msg
         else:
-            logstring = "["+timestamp_str(time.time())+"] "+msg
+            if not compact_log_fmt:
+                logstring = "["+timestamp_str(time.time())+"] "+loglevelname(level)+" "+msg
+            else:
+                logstring = "["+timestamp_str(time.time())+" "+msg
 
-        logging_lock.acquire()
+        with logging_lock:
+            if (logdest == LOG_STDOUT or _always_override_destination or _override_destination):
+                print(logstring)
 
-        if (logdest == LOG_STDOUT or _always_override_destination or _override_destination):
-            print(logstring)
-            logging_lock.release()
+            elif (logdest == LOG_FILE and logfile != None):
+                try:
+                    file = open(logfile, "a")
+                    file.write(logstring+"\n")
+                    file.close()
+                    
+                    if os.path.getsize(logfile) > LOG_MAXSIZE:
+                        prevfile = logfile+".1"
+                        if os.path.isfile(prevfile):
+                            os.unlink(prevfile)
+                        os.rename(logfile, prevfile)
 
-        elif (logdest == LOG_FILE and logfile != None):
-            try:
-                file = open(logfile, "a")
-                file.write(logstring+"\n")
-                file.close()
-                
-                if os.path.getsize(logfile) > LOG_MAXSIZE:
-                    prevfile = logfile+".1"
-                    if os.path.isfile(prevfile):
-                        os.unlink(prevfile)
-                    os.rename(logfile, prevfile)
+                except Exception as e:
+                    _always_override_destination = True
+                    log("Exception occurred while writing log message to log file: "+str(e), LOG_CRITICAL)
+                    log("Dumping future log events to console!", LOG_CRITICAL)
+                    log(msg, level)
 
-                logging_lock.release()
-            except Exception as e:
-                logging_lock.release()
-                _always_override_destination = True
-                log("Exception occurred while writing log message to log file: "+str(e), LOG_CRITICAL)
-                log("Dumping future log events to console!", LOG_CRITICAL)
-                log(msg, level)
-
-        elif logdest == LOG_CALLBACK:
-            try:
-                logcall(logstring)
-                logging_lock.release()
-            except Exception as e:
-                logging_lock.release()
-                _always_override_destination = True
-                log("Exception occurred while calling external log handler: "+str(e), LOG_CRITICAL)
-                log("Dumping future log events to console!", LOG_CRITICAL)
-                log(msg, level)
+            elif logdest == LOG_CALLBACK:
+                try:
+                    logcall(logstring)
+                except Exception as e:
+                    _always_override_destination = True
+                    log("Exception occurred while calling external log handler: "+str(e), LOG_CRITICAL)
+                    log("Dumping future log events to console!", LOG_CRITICAL)
+                    log(msg, level)
                 
 
 def rand():
@@ -233,6 +235,11 @@ def prettydistance(m, suffix="m"):
     return "%.2f %s%s" % (num, last_unit, suffix)
 
 def prettytime(time, verbose=False, compact=False):
+    neg = False
+    if time < 0:
+        time = abs(time)
+        neg = True
+
     days = int(time // (24 * 3600))
     time = time % (24 * 3600)
     hours = int(time // 3600)
@@ -283,10 +290,17 @@ def prettytime(time, verbose=False, compact=False):
     if tstr == "":
         return "0s"
     else:
-        return tstr
+        if not neg:
+            return tstr
+        else:
+            return f"-{tstr}"
 
 def prettyshorttime(time, verbose=False, compact=False):
+    neg = False
     time = time*1e6
+    if time < 0:
+        time = abs(time)
+        neg = True
     
     seconds = int(time // 1e6); time %= 1e6
     milliseconds = int(time // 1e3); time %= 1e3
@@ -330,7 +344,10 @@ def prettyshorttime(time, verbose=False, compact=False):
     if tstr == "":
         return "0us"
     else:
-        return tstr
+        if not neg:
+            return tstr
+        else:
+            return f"-{tstr}"
 
 def phyparams():
     print("Required Physical Layer MTU : "+str(Reticulum.MTU)+" bytes")
@@ -349,7 +366,7 @@ def exit():
     sys.exit(0)
 
 class Profiler:
-    ran = False
+    _ran = False
     profilers = {}
     tags = {}
 
@@ -404,8 +421,8 @@ class Profiler:
                 begin = Profiler.tags[tag]["threads"][thread_ident]["current_start"]
                 Profiler.tags[tag]["threads"][thread_ident]["current_start"] = None
                 Profiler.tags[tag]["threads"][thread_ident]["captures"].append(end-begin)
-                if not Profiler.ran:
-                    Profiler.ran = True
+                if not Profiler._ran:
+                    Profiler._ran = True
         self.resume_super()
 
     def pause(self, pause_started=None):
@@ -422,7 +439,7 @@ class Profiler:
 
     @staticmethod
     def ran():
-        return Profiler.ran
+        return Profiler._ran
 
     @staticmethod
     def results():
@@ -438,18 +455,25 @@ class Profiler:
                 thread_captures = thread_entry["captures"]
                 sample_count = len(thread_captures)
                 
-                if sample_count > 2:
+                if sample_count > 1:
                     thread_results = {
                         "count": sample_count,
                         "mean": mean(thread_captures),
                         "median": median(thread_captures),
                         "stdev": stdev(thread_captures)
                     }
+                elif sample_count == 1:
+                    thread_results = {
+                        "count": sample_count,
+                        "mean": mean(thread_captures),
+                        "median": median(thread_captures),
+                        "stdev": None
+                    }
 
                 tag_captures.extend(thread_captures)
 
             sample_count = len(tag_captures)
-            if sample_count > 2:
+            if sample_count > 1:
                 tag_results = {
                     "name": tag,
                     "super": tag_entry["super"],
@@ -458,8 +482,17 @@ class Profiler:
                     "median": median(tag_captures),
                     "stdev": stdev(tag_captures)
                 }
+            elif sample_count == 1:
+                tag_results = {
+                    "name": tag,
+                    "super": tag_entry["super"],
+                    "count": len(tag_captures),
+                    "mean": mean(tag_captures),
+                    "median": median(tag_captures),
+                    "stdev": None
+                }
 
-                results[tag] = tag_results
+            results[tag] = tag_results
 
         def print_results_recursive(tag, results, level=0):
             print_tag_results(tag, level+1)
@@ -474,11 +507,13 @@ class Profiler:
             ind = "  "*level
             name = tag["name"]; count = tag["count"]
             mean = tag["mean"]; median = tag["median"]; stdev = tag["stdev"]
-            print(f"{ind}{name}")
-            print(f"{ind}  Samples : {count}")
-            print(f"{ind}  Mean    : {prettyshorttime(mean)}")
-            print(f"{ind}  Median  : {prettyshorttime(median)}")
-            print(f"{ind}  St.dev. : {prettyshorttime(stdev)}")
+            print(    f"{ind}{name}")
+            print(    f"{ind}  Samples  : {count}")
+            if stdev != None:
+                print(f"{ind}  Mean     : {prettyshorttime(mean)}")
+                print(f"{ind}  Median   : {prettyshorttime(median)}")
+                print(f"{ind}  St.dev.  : {prettyshorttime(stdev)}")
+            print(    f"{ind}  Total    : {prettyshorttime(mean*count)}")
             print("")
 
         print("\nProfiler results:\n")

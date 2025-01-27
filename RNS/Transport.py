@@ -85,7 +85,8 @@ class Transport:
     destinations                = []           # All active destinations
     pending_links               = []           # Links that are being established
     active_links                = []           # Links that are active
-    packet_hashlist             = []           # A list of packet hashes for duplicate detection
+    packet_hashlist             = set()        # A list of packet hashes for duplicate detection
+    packet_hashlist_prev        = set()
     receipts                    = []           # Receipts of all outgoing packets for proof processing
 
     # TODO: "destination_table" should really be renamed to "path_table"
@@ -141,6 +142,12 @@ class Transport:
     interface_last_jobs         = 0.0
     interface_jobs_interval     = 5.0
 
+    traffic_rxb                 = 0
+    traffic_txb                 = 0
+    speed_rx                    = 0
+    speed_tx                    = 0
+    traffic_captured            = None
+
     identity = None
 
     @staticmethod
@@ -165,7 +172,8 @@ class Transport:
             if os.path.isfile(packet_hashlist_path):
                 try:
                     file = open(packet_hashlist_path, "rb")
-                    Transport.packet_hashlist = umsgpack.unpackb(file.read())
+                    hashlist_data = umsgpack.unpackb(file.read())
+                    Transport.packet_hashlist = set(hashlist_data)
                     file.close()
                 except Exception as e:
                     RNS.log("Could not load packet hashlist from storage, the contained exception was: "+str(e), RNS.LOG_ERROR)
@@ -191,6 +199,9 @@ class Transport:
         
         Transport.jobs_running = False
         thread = threading.Thread(target=Transport.jobloop, daemon=True)
+        thread.start()
+
+        thread = threading.Thread(target=Transport.count_traffic_loop, daemon=True)
         thread.start()
 
         if RNS.Reticulum.transport_enabled():
@@ -320,6 +331,40 @@ class Transport:
             RNS.log(f"Could not prioritize interfaces according to bitrate. The contained exception was: {e}", RNS.LOG_ERROR)
 
     @staticmethod
+    def count_traffic_loop():
+        while True:
+            time.sleep(1)
+            try:
+                rxb = 0; txb = 0;
+                rxs = 0; txs = 0;
+                for interface in Transport.interfaces:
+                    if not hasattr(interface, "parent_interface") or interface.parent_interface == None:
+                        if hasattr(interface, "transport_traffic_counter"):
+                            now = time.time(); irxb = interface.rxb; itxb = interface.txb
+                            tc = interface.transport_traffic_counter
+                            rx_diff = irxb - tc["rxb"]
+                            tx_diff = itxb - tc["txb"]
+                            ts_diff = now  - tc["ts"]
+                            rxb    += rx_diff; crxs = (rx_diff*8)/ts_diff
+                            txb    += tx_diff; ctxs = (tx_diff*8)/ts_diff
+                            interface.current_rx_speed = crxs; rxs += crxs
+                            interface.current_tx_speed = ctxs; txs += ctxs
+                            tc["rxb"] = irxb;
+                            tc["txb"] = itxb;
+                            tc["ts"] = now;
+
+                        else:
+                            interface.transport_traffic_counter = {"ts": time.time(), "rxb": interface.rxb, "txb": interface.txb}
+
+                Transport.traffic_rxb += rxb
+                Transport.traffic_txb += txb
+                Transport.speed_rx    = rxs
+                Transport.speed_tx    = txs
+            
+            except Exception as e:
+                RNS.log(f"An error occurred while counting interface traffic: {e}", RNS.LOG_ERROR)
+
+    @staticmethod
     def jobloop():
         while (True):
             Transport.jobs()
@@ -446,8 +491,9 @@ class Transport:
 
 
                 # Cull the packet hashlist if it has reached its max size
-                if len(Transport.packet_hashlist) > Transport.hashlist_maxsize:
-                    Transport.packet_hashlist = Transport.packet_hashlist[len(Transport.packet_hashlist)-Transport.hashlist_maxsize:len(Transport.packet_hashlist)-1]
+                if len(Transport.packet_hashlist) > Transport.hashlist_maxsize//2:
+                    Transport.packet_hashlist_prev = Transport.packet_hashlist
+                    Transport.packet_hashlist = set()
 
                 # Cull the path request tags list if it has reached its max size
                 if len(Transport.discovery_pr_tags) > Transport.max_pr_tags:
@@ -983,10 +1029,10 @@ class Transport:
                                 
                                 else:
                                     pass
-                            
+
                     if should_transmit:
                         if not stored_hash:
-                            Transport.packet_hashlist.append(packet.packet_hash)
+                            Transport.packet_hashlist.add(packet.packet_hash)
                             stored_hash = True
 
                         # TODO: Re-evaluate potential for blocking
@@ -1052,7 +1098,7 @@ class Transport:
                 RNS.log("Dropped invalid GROUP announce packet", RNS.LOG_DEBUG)
                 return False
 
-        if not packet.packet_hash in Transport.packet_hashlist:
+        if not packet.packet_hash in Transport.packet_hashlist and not packet.packet_hash in Transport.packet_hashlist_prev:
             return True
         else:
             if packet.packet_type == RNS.Packet.ANNOUNCE:
@@ -1197,7 +1243,7 @@ class Transport:
                 remember_packet_hash = False
 
             if remember_packet_hash:
-                Transport.packet_hashlist.append(packet.packet_hash)
+                Transport.packet_hashlist.add(packet.packet_hash)
                 # TODO: Enable when caching has been redesigned
                 # Transport.cache(packet)
             
@@ -1282,6 +1328,24 @@ class Transport:
                                 now = time.time()
                                 proof_timeout  = Transport.extra_link_proof_timeout(packet.receiving_interface)
                                 proof_timeout += now + RNS.Link.ESTABLISHMENT_TIMEOUT_PER_HOP * max(1, remaining_hops)
+                                
+                                path_mtu       = RNS.Link.mtu_from_lr_packet(packet)
+                                nh_mtu         = outbound_interface.HW_MTU
+                                if path_mtu:
+                                    if outbound_interface.HW_MTU == None:
+                                        RNS.log(f"No next-hop HW MTU, disabling link MTU upgrade", RNS.LOG_DEBUG) # TODO: Remove debug
+                                        path_mtu = None
+                                        new_raw  = new_raw[:-RNS.Link.LINK_MTU_SIZE]
+                                    elif not outbound_interface.AUTOCONFIGURE_MTU:
+                                        RNS.log(f"Outbound interface doesn't support MTU autoconfiguration, disabling link MTU upgrade", RNS.LOG_DEBUG) # TODO: Remove debug
+                                        path_mtu = None
+                                        new_raw  = new_raw[:-RNS.Link.LINK_MTU_SIZE]
+                                    else:
+                                        if nh_mtu < path_mtu:
+                                            path_mtu = nh_mtu
+                                            clamped_mtu = RNS.Link.mtu_bytes(path_mtu)
+                                            RNS.log(f"Clamping link MTU to {RNS.prettysize(nh_mtu)}: {RNS.hexrep(clamped_mtu)}", RNS.LOG_DEBUG) # TODO: Remove debug
+                                            new_raw  = new_raw[:-RNS.Link.LINK_MTU_SIZE]+clamped_mtu
 
                                 # Entry format is
                                 link_entry = [  now,                            # 0: Timestamp,
@@ -1294,7 +1358,7 @@ class Transport:
                                                 False,                          # 7: Validated
                                                 proof_timeout]                  # 8: Proof timeout timestamp
 
-                                Transport.link_table[packet.getTruncatedHash()] = link_entry
+                                Transport.link_table[RNS.Link.link_id_from_lr_packet(packet)] = link_entry
 
                             else:
                                 # Entry format is
@@ -1344,7 +1408,7 @@ class Transport:
                             # Add this packet to the filter hashlist if we
                             # have determined that it's actually our turn
                             # to process it.
-                            Transport.packet_hashlist.append(packet.packet_hash)
+                            Transport.packet_hashlist.add(packet.packet_hash)
 
                             new_raw = packet.raw[0:1]
                             new_raw += struct.pack("!B", packet.hops)
@@ -1733,6 +1797,24 @@ class Transport:
                 if packet.transport_id == None or packet.transport_id == Transport.identity.hash:
                     for destination in Transport.destinations:
                         if destination.hash == packet.destination_hash and destination.type == packet.destination_type:
+                            path_mtu       = RNS.Link.mtu_from_lr_packet(packet)
+                            if packet.receiving_interface.AUTOCONFIGURE_MTU:
+                                nh_mtu     = packet.receiving_interface.HW_MTU
+                            else:
+                                nh_mtu     = RNS.Reticulum.MTU
+
+                            if path_mtu:
+                                if packet.receiving_interface.HW_MTU == None:
+                                    RNS.log(f"No next-hop HW MTU, disabling link MTU upgrade", RNS.LOG_DEBUG) # TODO: Remove debug
+                                    path_mtu = None
+                                    packet.data  = packet.data[:-RNS.Link.LINK_MTU_SIZE]
+                                else:
+                                    if nh_mtu < path_mtu:
+                                        path_mtu = nh_mtu
+                                        clamped_mtu = RNS.Link.mtu_bytes(path_mtu)
+                                        RNS.log(f"Clamping link MTU to {RNS.prettysize(nh_mtu)}", RNS.LOG_DEBUG) # TODO: Remove debug
+                                        packet.data  = packet.data[:-RNS.Link.LINK_MTU_SIZE]+clamped_mtu
+
                             packet.destination = destination
                             destination.receive(packet)
             
@@ -1790,12 +1872,16 @@ class Transport:
                         if packet.hops == link_entry[3]:
                             if packet.receiving_interface == link_entry[2]:
                                 try:
-                                    if len(packet.data) == RNS.Identity.SIGLENGTH//8+RNS.Link.ECPUBSIZE//2:
+                                    if len(packet.data) == RNS.Identity.SIGLENGTH//8+RNS.Link.ECPUBSIZE//2 or len(packet.data) == RNS.Identity.SIGLENGTH//8+RNS.Link.ECPUBSIZE//2+RNS.Link.LINK_MTU_SIZE:
+                                        mtu_bytes = b""
+                                        if len(packet.data) == RNS.Identity.SIGLENGTH//8+RNS.Link.ECPUBSIZE//2+RNS.Link.LINK_MTU_SIZE:
+                                            mtu_bytes = RNS.Link.mtu_bytes(RNS.Link.mtu_from_lp_packet(packet))
+
                                         peer_pub_bytes = packet.data[RNS.Identity.SIGLENGTH//8:RNS.Identity.SIGLENGTH//8+RNS.Link.ECPUBSIZE//2]
                                         peer_identity = RNS.Identity.recall(link_entry[6])
                                         peer_sig_pub_bytes = peer_identity.get_public_key()[RNS.Link.ECPUBSIZE//2:RNS.Link.ECPUBSIZE]
 
-                                        signed_data = packet.destination_hash+peer_pub_bytes+peer_sig_pub_bytes
+                                        signed_data = packet.destination_hash+peer_pub_bytes+peer_sig_pub_bytes+mtu_bytes
                                         signature = packet.data[:RNS.Identity.SIGLENGTH//8]
 
                                         if peer_identity.validate(signature, signed_data):
@@ -1837,7 +1923,7 @@ class Transport:
                                     # Add this packet to the filter hashlist if we
                                     # have determined that it's actually destined
                                     # for this system, and then validate the proof
-                                    Transport.packet_hashlist.append(packet.packet_hash)
+                                    Transport.packet_hashlist.add(packet.packet_hash)
                                     link.validate_proof(packet)
 
                 elif packet.context == RNS.Packet.RESOURCE_PRF:
@@ -2186,6 +2272,17 @@ class Transport:
         next_hop_interface = Transport.next_hop_interface(destination_hash)
         if next_hop_interface != None:
             return next_hop_interface.bitrate
+        else:
+            return None
+
+    @staticmethod
+    def next_hop_interface_hw_mtu(destination_hash):
+        next_hop_interface = Transport.next_hop_interface(destination_hash)
+        if next_hop_interface != None:
+            if next_hop_interface.AUTOCONFIGURE_MTU:
+                return next_hop_interface.HW_MTU
+            else:
+                return None
         else:
             return None
 
@@ -2565,7 +2662,7 @@ class Transport:
             # Currently no rules are being applied
             # here, and all interfaces will be sent
             # the detach call on RNS teardown.
-            if True:
+            if not interface.detached:
                 detachable_interfaces.append(interface)
             else:
                 pass
@@ -2574,16 +2671,44 @@ class Transport:
             # Currently no rules are being applied
             # here, and all interfaces will be sent
             # the detach call on RNS teardown.
-            if True:
+            if not interface.detached:
                 detachable_interfaces.append(interface)
             else:
                 pass
 
+        shared_instance_master = None
+        local_interfaces = []
+        detach_threads = []
+        RNS.log("Detaching interfaces", RNS.LOG_DEBUG)
         for interface in detachable_interfaces:
             try:
-                interface.detach()
+                if type(interface) == RNS.Interfaces.LocalInterface.LocalServerInterface:
+                    shared_instance_master = interface
+                elif type(interface) == RNS.Interfaces.LocalInterface.LocalClientInterface:
+                    local_interfaces.append(interface)
+                else:
+                    def detach_job():
+                        RNS.log(f"Detaching {interface}", RNS.LOG_EXTREME)
+                        interface.detach()
+                    dt = threading.Thread(target=detach_job, daemon=False)
+                    dt.start()
+                    detach_threads.append(dt)
+
             except Exception as e:
                 RNS.log("An error occurred while detaching "+str(interface)+". The contained exception was: "+str(e), RNS.LOG_ERROR)
+
+        for dt in detach_threads:
+            dt.join()
+
+        RNS.log("Detaching local clients", RNS.LOG_DEBUG)
+        for li in local_interfaces:
+            li.detach()
+
+        RNS.log("Detaching shared instance", RNS.LOG_DEBUG)
+        if shared_instance_master != None:
+            shared_instance_master.detach()
+
+        RNS.log("All interfaces detached", RNS.LOG_DEBUG)
 
     @staticmethod
     def shared_connection_disappeared():
@@ -2651,13 +2776,13 @@ class Transport:
                 save_start = time.time()
 
                 if not RNS.Reticulum.transport_enabled():
-                    Transport.packet_hashlist = []
+                    Transport.packet_hashlist = set()
                 else:
                     RNS.log("Saving packet hashlist to storage...", RNS.LOG_DEBUG)
 
                 packet_hashlist_path = RNS.Reticulum.storagepath+"/packet_hashlist"
                 file = open(packet_hashlist_path, "wb")
-                file.write(umsgpack.packb(Transport.packet_hashlist))
+                file.write(umsgpack.packb(list(Transport.packet_hashlist)))
                 file.close()
 
                 save_time = time.time() - save_start

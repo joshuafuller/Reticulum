@@ -41,7 +41,7 @@ import RNS
 RNS.logtimefmt      = "%H:%M:%S"
 RNS.compact_log_fmt = True
 
-program_version = "2.3.0"
+program_version = "2.4.0"
 eth_addr = "0xFDabC71AC4c0C78C95aDDDe3B4FA19d6273c5E73"
 btc_addr = "35G9uWVzrpJJibzUwpNUQGQNFzLirhrYAH"
 xmr_addr = "87HcDx6jRSkMQ9nPRd5K9hGGpZLn2s7vWETjMaVM5KfV4TD36NcYa8J8WSxhTSvBzzFpqDwp2fg5GX2moZ7VAP9QMZCZGET"
@@ -191,8 +191,8 @@ class ROM():
     MODEL_21            = 0x21
 
     PRODUCT_TECHO       = 0x15
-    MODEL_T4            = 0x16
-    MODEL_T9            = 0x17
+    MODEL_16            = 0x16
+    MODEL_17            = 0x17
 
     PRODUCT_HELTEC_T114 = 0xC2
     BOARD_HELTEC_T114   = 0x3C
@@ -217,6 +217,17 @@ class ROM():
     ADDR_CONF_BW   = 0x9F
     ADDR_CONF_FREQ = 0xA3
     ADDR_CONF_OK   = 0xA7
+
+    ADDR_CONF_BT   = 0xB0
+    ADDR_CONF_DSET = 0xB1
+    ADDR_CONF_DINT = 0xB2
+    ADDR_CONF_DADR = 0xB3
+    ADDR_CONF_DBLK = 0xB4
+    ADDR_CONF_DROT = 0xB8
+    ADDR_CONF_PSET = 0xB5
+    ADDR_CONF_PINT = 0xB6
+    ADDR_CONF_BSET = 0xB7
+    ADDR_CONF_DIA  = 0xB9
 
     INFO_LOCK_BYTE = 0x73
     CONF_OK_BYTE   = 0x73
@@ -1349,6 +1360,8 @@ def main():
         parser.add_argument("-x", "--ia-enable", action="store_true", help="Enable interference avoidance")
         parser.add_argument("-X", "--ia-disable", action="store_true", help="Disable interference avoidance")
 
+        parser.add_argument("-c", "--config", action="store_true", help="Print device configuration")
+
         parser.add_argument("--eeprom-backup", action="store_true", help="Backup EEPROM to file")
         parser.add_argument("--eeprom-dump", action="store_true", help="Dump EEPROM to console")
         parser.add_argument("--eeprom-wipe", action="store_true", help="Unlock and wipe EEPROM")
@@ -1362,7 +1375,7 @@ def main():
         parser.add_argument("-r", "--rom", action="store_true", help="Bootstrap EEPROM without flashing firmware")
         parser.add_argument("-k", "--key", action="store_true", help="Generate a new signing key and exit") # 
         parser.add_argument("-S", "--sign", action="store_true", help="Display public part of signing key")
-        parser.add_argument("-H", "--firmware-hash", action="store", help="Display installed firmware hash")
+        parser.add_argument("-H", "--firmware-hash", action="store", help="Set installed firmware hash")
         parser.add_argument("-K", "--get-target-firmware-hash", action="store_true", help=argparse.SUPPRESS) # Get target firmware hash from device
         parser.add_argument("-L", "--get-firmware-hash", action="store_true", help=argparse.SUPPRESS) # Get calculated firmware hash from device
         parser.add_argument("--platform", action="store", metavar="platform", type=str, default=None, help="Platform specification for device bootstrap")
@@ -2020,10 +2033,12 @@ def main():
                     print("");
                     print("[3] 433 MHz         (with SX1268 chip)")
                     print("[4] 868/915/923 MHz (with SX1262 chip)")
+                    print("");
+                    print("[5] 2.4 GHz         (with SX1280 chip and PA)")
                     print("\n? ", end="")
                     try:
                         c_model = int(input())
-                        if c_model < 1 or c_model > 4:
+                        if c_model < 1 or c_model > 5:
                             raise ValueError()
                         elif c_model == 1:
                             selected_model = ROM.MODEL_A5
@@ -2039,6 +2054,10 @@ def main():
                             selected_platform = ROM.PLATFORM_ESP32
                         elif c_model == 4:
                             selected_model = ROM.MODEL_A6
+                            selected_mcu = ROM.MCU_ESP32
+                            selected_platform = ROM.PLATFORM_ESP32
+                        elif c_model == 5:
+                            selected_model = ROM.MODEL_AC
                             selected_mcu = ROM.MCU_ESP32
                             selected_platform = ROM.PLATFORM_ESP32
                     except Exception as e:
@@ -2281,13 +2300,13 @@ def main():
                 print("\n? ", end="")
                 try:
                     c_model = int(input())
-                    if c_model < 1 or c_model > 1:
+                    if c_model < 1 or c_model > 4:
                         raise ValueError()
                     elif c_model == 1:
-                        selected_model = ROM.MODEL_T4
+                        selected_model = ROM.MODEL_16
                         selected_platform = ROM.PLATFORM_NRF52
                     elif c_model > 1:
-                        selected_model = ROM.MODEL_T9
+                        selected_model = ROM.MODEL_17
                         selected_platform = ROM.PLATFORM_NRF52
                 except Exception as e:
                     print("That band does not exist, exiting now.")
@@ -2987,6 +3006,24 @@ def main():
                             "0x210000",UPD_DIR+"/"+selected_version+"/console_image.bin",
                             "0x8000",  UPD_DIR+"/"+selected_version+"/rnode_firmware_t3s3_sx127x.partitions",
                         ]
+                    elif fw_filename == "rnode_firmware_t3s3_sx1280_pa.zip":
+                        return [
+                            sys.executable, flasher,
+                            "--chip", "esp32s3",
+                            "--port", args.port,
+                            "--baud", args.baud_flash,
+                            "--before", "default_reset",
+                            "--after", "hard_reset",
+                            "write_flash", "-z",
+                            "--flash_mode", "dio",
+                            "--flash_freq", "80m",
+                            "--flash_size", "4MB",
+                            "0xe000",  UPD_DIR+"/"+selected_version+"/rnode_firmware_t3s3_sx1280_pa.boot_app0",
+                            "0x0",  UPD_DIR+"/"+selected_version+"/rnode_firmware_t3s3_sx1280_pa.bootloader",
+                            "0x10000", UPD_DIR+"/"+selected_version+"/rnode_firmware_t3s3_sx1280_pa.bin",
+                            "0x210000",UPD_DIR+"/"+selected_version+"/console_image.bin",
+                            "0x8000",  UPD_DIR+"/"+selected_version+"/rnode_firmware_t3s3_sx1280_pa.partitions",
+                        ]
                     elif fw_filename == "rnode_firmware_tbeam_supreme.zip":
                         return [
                             sys.executable, flasher,
@@ -3136,12 +3173,12 @@ def main():
                                 if args.platform == ROM.PLATFORM_ESP32:
                                     wants_fw_provision = True
                                     RNS.log("Waiting for ESP32 reset...")
-                                    time.sleep(7)
+                                    time.sleep(8)
                                 if args.platform == ROM.PLATFORM_NRF52:
                                     wants_fw_provision = True
                                     RNS.log("Waiting for NRF52 reset...")
                                     # Don't need to wait as long this time.
-                                    time.sleep(5)
+                                    time.sleep(6)
                             else:
                                 RNS.log("Error from flasher ("+str(flash_status)+") while writing.")
                                 RNS.log("Some boards have trouble flashing at high speeds, and you can")
@@ -3393,6 +3430,63 @@ def main():
                     RNS.log("Firmware update file not found")
                     graceful_exit()
 
+            if args.config:
+                eeprom_reserved = 200
+                if rnode.platform == ROM.PLATFORM_ESP32:
+                    eeprom_size = 296
+                elif rnode.platform == ROM.PLATFORM_NRF52:
+                    eeprom_size = 296
+                else:
+                    eeprom_size = 4096
+
+                eeprom_offset = eeprom_size-eeprom_reserved
+                def ea(a):
+                    return a+eeprom_offset
+                ec_bt   = rnode.eeprom[ROM.ADDR_CONF_BT]
+                ec_dint = rnode.eeprom[ROM.ADDR_CONF_DINT]
+                ec_dadr = rnode.eeprom[ROM.ADDR_CONF_DADR]
+                ec_dblk = rnode.eeprom[ROM.ADDR_CONF_DBLK]
+                ec_drot = rnode.eeprom[ROM.ADDR_CONF_DROT]
+                ec_pset = rnode.eeprom[ROM.ADDR_CONF_PSET]
+                ec_pint = rnode.eeprom[ROM.ADDR_CONF_PINT]
+                ec_bset = rnode.eeprom[ROM.ADDR_CONF_BSET]
+                ec_dia  = rnode.eeprom[ROM.ADDR_CONF_DIA]
+                print("\nDevice configuration:")
+                if ec_bt == 0x73:
+                    print(f"  Bluetooth              : Enabled")
+                else:
+                    print(f"  Bluetooth              : Disabled")
+                if ec_dia == 0x00:
+                    print(f"  Interference avoidance : Enabled")
+                else:
+                    print(f"  Interference avoidance : Disabled")
+                print(    f"  Display brightness     : {ec_dint}")
+                if ec_dadr == 0xFF:
+                    print(f"  Display address        : Default")
+                else:
+                    print(f"  Display address        : {RNS.hexrep(ec_dadr, delimit=False)}")
+                if ec_bset == 0x73 and ec_dblk != 0x00:
+                    print(f"  Display blanking       : {ec_dblk}s")
+                else:
+                    print(f"  Display blanking       : Disabled")
+                if ec_drot != 0xFF:
+                    if ec_drot == 0x00:
+                        rstr = "Landscape"
+                    if ec_drot == 0x01:
+                        rstr = "Portrait"
+                    if ec_drot == 0x02:
+                        rstr = "Landscape 180"
+                    if ec_drot == 0x03:
+                        rstr = "Portrait 180"
+                    print(f"  Display rotation       : {rstr}")
+                else:
+                    print(f"  Display rotation       : Default")
+                if ec_pset == 0x73:
+                    print(f"  Neopixel Intensity     : {ec_pint}")
+                print("")
+
+                graceful_exit()
+
             if args.eeprom_dump:
                 RNS.log("EEPROM contents:")
                 RNS.log(RNS.hexrep(rnode.eeprom))
@@ -3579,7 +3673,7 @@ def main():
                         elif rnode.platform == ROM.PLATFORM_NRF52:
                             rnode_serial.close()
                             RNS.log("Waiting for NRF52 reset...")
-                            time.sleep(14)
+                            time.sleep(18)
                             selected_port = None
                             ports = list_ports.comports()
                             for port in ports:
@@ -3790,7 +3884,9 @@ def main():
                             if rnode.platform == ROM.PLATFORM_ESP32:
                                 rnode.hard_reset()
                                 RNS.log("Waiting for ESP32 reset...")
-                                time.sleep(6.5)
+                                time.sleep(7)
+                                if selected_model in [ROM.MODEL_AC, ROM.MODEL_A6, ROM.MODEL_A1, ROM.MODEL_AA, ROM.MODEL_A5]:
+                                    time.sleep(5)
 
                             elif rnode.platform == ROM.PLATFORM_NRF52:
                                 # Wait a few seconds before hard resetting.
@@ -3809,7 +3905,7 @@ def main():
 
                                 # Give plenty of time for to allow for
                                 # potential e-ink display refresh too.
-                                time.sleep(14)
+                                time.sleep(20)
 
                                 # After the hard reset, the port number will
                                 # change. We need to find the new port number,

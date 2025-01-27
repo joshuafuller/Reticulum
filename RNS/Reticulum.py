@@ -39,8 +39,9 @@ else:
 from RNS.vendor.configobj import ConfigObj
 import configparser
 import multiprocessing.connection
-import signal
+import importlib
 import threading
+import signal
 import atexit
 import struct
 import array
@@ -87,6 +88,16 @@ class Reticulum:
 
     Unless you really know what you are doing, the MTU should be left at
     the default value.
+    """
+
+    LINK_MTU_DISCOVERY   = False
+    """
+    Whether automatic link MTU discovery is enabled by default in this
+    release. Link MTU discovery significantly increases throughput over
+    fast links, but requires all intermediary hops to also support it.
+    Support for this feature was added in RNS version 0.9.0. This option
+    will become enabled by default in the near future. Please update your
+    RNS instances.
     """
 
     MAX_QUEUED_ANNOUNCES = 16384
@@ -151,31 +162,35 @@ class Reticulum:
     interfacepath    = ""
 
     __instance       = None
-    
+
+    __interface_detach_ran = False
     @staticmethod
     def exit_handler():
         # This exit handler is called whenever Reticulum is asked to
         # shut down, and will in turn call exit handlers in other
         # classes, saving necessary information to disk and carrying
         # out cleanup operations.
-
+        if not Reticulum.__interface_detach_ran:
+            RNS.Transport.detach_interfaces()
         RNS.Transport.exit_handler()
         RNS.Identity.exit_handler()
 
         if RNS.Profiler.ran():
             RNS.Profiler.results()
 
+        RNS.loglevel = -1
+
     @staticmethod
     def sigint_handler(signal, frame):
         RNS.Transport.detach_interfaces()
+        Reticulum.__interface_detach_ran = True
         RNS.exit()
-
 
     @staticmethod
     def sigterm_handler(signal, frame):
         RNS.Transport.detach_interfaces()
+        Reticulum.__interface_detach_ran = True
         RNS.exit()
-
 
     @staticmethod
     def get_instance():
@@ -225,6 +240,7 @@ class Reticulum:
         Reticulum.interfacepath = Reticulum.configdir+"/interfaces"
 
         Reticulum.__transport_enabled = False
+        Reticulum.__link_mtu_discovery = Reticulum.LINK_MTU_DISCOVERY
         Reticulum.__remote_management_enabled = False
         Reticulum.__use_implicit_proof = True
         Reticulum.__allow_probes = False
@@ -250,6 +266,7 @@ class Reticulum:
             RNS.loglevel = self.requested_loglevel
 
         self.is_shared_instance = False
+        self.shared_instance_interface = None
         self.require_shared = require_shared_instance
         self.is_connected_to_shared_instance = False
         self.is_standalone_instance = False
@@ -286,7 +303,7 @@ class Reticulum:
             time.sleep(1.5)
 
         self.__apply_config()
-        RNS.log(f"Utilising cryptography backend \"{RNS.Cryptography.Provider.backend()}\"", RNS.LOG_VERBOSE)
+        RNS.log(f"Utilising cryptography backend \"{RNS.Cryptography.Provider.backend()}\"", RNS.LOG_DEBUG)
         RNS.log(f"Configuration loaded from {self.configpath}", RNS.LOG_VERBOSE)
         
         RNS.Identity.load_known_destinations()
@@ -339,6 +356,7 @@ class Reticulum:
                     interface.bitrate = Reticulum._force_shared_instance_bitrate
                     interface._force_bitrate = Reticulum._force_shared_instance_bitrate
                     RNS.log(f"Forcing shared instance bitrate of {RNS.prettyspeed(interface.bitrate)}", RNS.LOG_WARNING)
+                    interface.optimise_mtu()
                 
                 if self.require_shared == True:
                     interface.detach()
@@ -347,6 +365,7 @@ class Reticulum:
 
                 else:
                     RNS.Transport.interfaces.append(interface)
+                    self.shared_instance_interface = interface
                     self.is_shared_instance = True
                     RNS.log("Started shared instance interface: "+str(interface), RNS.LOG_DEBUG)
                     self.__start_jobs()
@@ -363,6 +382,7 @@ class Reticulum:
                         interface.bitrate = Reticulum._force_shared_instance_bitrate
                         interface._force_bitrate = True
                         RNS.log(f"Forcing shared instance bitrate of {RNS.prettyspeed(interface.bitrate)}", RNS.LOG_WARNING)
+                        interface.optimise_mtu()
                     RNS.Transport.interfaces.append(interface)
                     self.is_shared_instance = False
                     self.is_standalone_instance = False
@@ -423,6 +443,10 @@ class Reticulum:
                     v = self.config["reticulum"].as_bool(option)
                     if v == True:
                         Reticulum.__transport_enabled = True
+                if option == "link_mtu_discovery":
+                    v = self.config["reticulum"].as_bool(option)
+                    if v == True:
+                        Reticulum.__link_mtu_discovery = True
                 if option == "enable_remote_management":
                     v = self.config["reticulum"].as_bool(option)
                     if v == True:
@@ -580,6 +604,7 @@ class Reticulum:
                                     interface.announce_cap = announce_cap
                                     if configured_bitrate:
                                         interface.bitrate = configured_bitrate
+                                    interface.optimise_mtu()
                                     if ifac_size != None:
                                         interface.ifac_size = ifac_size
                                     else:
@@ -742,6 +767,7 @@ class Reticulum:
 
                 if configured_bitrate:
                     interface.bitrate = configured_bitrate
+                interface.optimise_mtu()
 
                 if ifac_size != None:
                     interface.ifac_size = ifac_size
@@ -955,6 +981,22 @@ class Reticulum:
                     else:
                         ifstats["bitrate"] = None
 
+                if hasattr(interface, "current_rx_speed"):
+                    if interface.current_rx_speed != None:
+                        ifstats["rxs"] = interface.current_rx_speed
+                    else:
+                        ifstats["rxs"] = 0
+                else:
+                    ifstats["rxs"] = 0
+
+                if hasattr(interface, "current_tx_speed"):
+                    if interface.current_tx_speed != None:
+                        ifstats["txs"] = interface.current_tx_speed
+                    else:
+                        ifstats["txs"] = 0
+                else:
+                    ifstats["txs"] = 0
+
                 if hasattr(interface, "peers"):
                     if interface.peers != None:
                         ifstats["peers"] = len(interface.peers)
@@ -992,6 +1034,10 @@ class Reticulum:
 
             stats = {}
             stats["interfaces"] = interfaces
+            stats["rxb"] = RNS.Transport.traffic_rxb
+            stats["txb"] = RNS.Transport.traffic_txb
+            stats["rxs"] = RNS.Transport.speed_rx
+            stats["txs"] = RNS.Transport.speed_tx
             if Reticulum.transport_enabled():
                 stats["transport_id"] = RNS.Transport.identity.hash
                 stats["transport_uptime"] = time.time()-RNS.Transport.start_time
@@ -999,6 +1045,13 @@ class Reticulum:
                     stats["probe_responder"] = RNS.Transport.probe_destination.hash
                 else:
                     stats["probe_responder"] = None
+
+            if importlib.util.find_spec('psutil') != None:
+                import psutil
+                process = psutil.Process()
+                stats["rss"] = process.memory_info().rss
+            else:
+                stats["rss"] = None
 
             return stats
 
@@ -1211,6 +1264,20 @@ class Reticulum:
         :returns: True if Transport is enabled, False if not.
         """
         return Reticulum.__transport_enabled
+
+    @staticmethod
+    def link_mtu_discovery():
+        """
+        Returns whether link MTU discovery is enabled for the running
+        instance.
+
+        When link MTU discovery is enabled, Reticulum will
+        automatically upgrade link MTUs to the highest supported
+        value, increasing transfer speed and efficiency.
+
+        :returns: True if link MTU discovery is enabled, False if not.
+        """
+        return Reticulum.__link_mtu_discovery
 
     @staticmethod
     def remote_management_enabled():

@@ -95,7 +95,8 @@ The Reticulum Protocol was dedicated to the Public Domain in 2016.
 
 ## Examples of Reticulum Applications
 If you want to quickly get an idea of what Reticulum can do, take a look at the
-following resources.
+[Programs Using Reticulum](https://reticulum.network/manual/software.html)
+section of the manual, or the following resources:
 
 - You can use the [rnsh](https://github.com/acehoss/rnsh) program to establish remote shell sessions over Reticulum.
 - [LXMF](https://github.com/markqvist/lxmf) is a distributed, delay and disruption tolerant message transfer protocol built on Reticulum

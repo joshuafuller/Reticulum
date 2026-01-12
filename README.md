@@ -78,11 +78,20 @@ For more info, see [reticulum.network](https://reticulum.network/) and [the FAQ 
   - Low cost of keeping links open at only 0.44 bits per second
 - Reliable sequential delivery with Channel and Buffer mechanisms
 
-## Roadmap
-While Reticulum is already a fully featured and functional networking stack,
-many improvements and additions are actively being worked on, and planned for the future.
+## Reference Implementation
 
-To learn more about the direction and future of Reticulum, please see the [Development Roadmap](./Roadmap.md).
+The Python code in this repository is the Reference Implementation of Reticulum.
+The Reticulum Protocol is defined entirely and authoritatively by this reference
+implementation, and its associated manual. It is maintained by Mark Qvist,
+identified by the Reticulum Identity `<bc7291552be7a58f361522990465165c>`.
+
+Compatibility with the Reticulum Protocol is defined as having full interoperability,
+and sufficient functional parity with this reference implementation. Any specific protocol
+implementation that achieves this is Reticulum. Any that does not is not Reticulum.
+
+The reference implementation is licensed under the Reticulum License.
+
+The Reticulum Protocol was dedicated to the Public Domain in 2016.
 
 ## Examples of Reticulum Applications
 If you want to quickly get an idea of what Reticulum can do, take a look at the
@@ -218,21 +227,6 @@ upgrades, but not highly prioritised at this point in time.
 All core protocol features are implemented and functioning, but additions will
 probably occur as real-world use is explored and understood. The API and wire-format
 can be considered stable.
-
-## Reference Implementation
-
-The Python code in this repository is the Reference Implementation of Reticulum.
-The Reticulum Protocol is defined entirely and authoritatively by this reference
-implementation, and its associated manual. It is maintained by Mark Qvist,
-identified by the Reticulum Identity `<bc7291552be7a58f361522990465165c>`.
-
-Compatibility with the Reticulum Protocol is defined as having full interoperability,
-and sufficient functional parity with this reference implementation. Any specific protocol
-implementation that achieves this is Reticulum. Any that does not is not Reticulum.
-
-The reference implementation is licensed under the Reticulum License.
-
-The Reticulum Protocol was dedicated to the Public Domain in 2016.
 
 ## Dependencies
 The installation of the default `rns` package requires the dependencies listed

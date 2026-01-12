@@ -219,6 +219,21 @@ All core protocol features are implemented and functioning, but additions will
 probably occur as real-world use is explored and understood. The API and wire-format
 can be considered stable.
 
+## Reference Implementation
+
+The Python code in this repository is the Reference Implementation of Reticulum.
+The Reticulum Protocol is defined entirely and authoritatively by this reference
+implementation, and its associated manual. It is maintained by Mark Qvist,
+identified by the Reticulum Identity `<bc7291552be7a58f361522990465165c>`.
+
+Compatibility with the Reticulum Protocol is defined as having full interoperability,
+and sufficient functional parity with this reference implementation. Any specific protocol
+implementation that achieves this is Reticulum. Any that does not is not Reticulum.
+
+The reference implementation is licensed under the Reticulum License.
+
+The Reticulum Protocol was dedicated to the Public Domain in 2016.
+
 ## Dependencies
 The installation of the default `rns` package requires the dependencies listed
 below. Almost all systems and distributions have readily available packages for
@@ -248,45 +263,21 @@ that do not support [PyCA/cryptography](https://github.com/pyca/cryptography),
 it is important that you read and understand the [Cryptographic
 Primitives](#cryptographic-primitives) section of this document.
 
+## Bootstrapping Connectivity
+
+Reticulum is not a service you subscribe to, nor is it a single global network you "join".
+Reticulum itself provides functionality for discovering available public interfaces
+over the network itself, and the broader community has provided various directories
+of publicly available entrypoints to bootstrap connectivity.
+
+To learn how to establish initial connectivity over Reticulum, read the [Bootstrapping Connectivity](https://reticulum.network/manual/gettingstartedfast.html#bootstrapping-connectivity) section of the manual.
+
+If you already have a general idea of how this works, you can use community-run
+sites such as [directory.rns.recipes](https://directory.rns.recipes/) and [rmap.world](https://rmap.world)
+to find interface definitions for initial connectivity to the global distributed Reticulum backbone.
+
 ## Public Testnet
-***Important!** As the amount of global Reticulum nodes and entrypoints have grown to a substantial quantity, the public Amsterdam Testnet entrypoint is slated for de-commisioning in the first quarter of 2026. If your own instances rely on this entrypoint for connectivity, it is high time to start configuring alternatives. Reticulum now includes a full on-network interface discovery and connectivity bootstrapping system. Read the [Bootstrapping Connectivity](https://reticulum.network/manual/gettingstartedfast.html#bootstrapping-connectivity) section of the manual for pointers.*
-
-If you just want to get started experimenting without building any physical
-networks, you are welcome to join the RNS Development Testnet.
-
-The testnet is just that, an informal network for testing and experimenting.
-It will be up most of the time, and anyone can join, but it also means that
-there's no guarantees for service availability.
-
-It probably goes without saying, but *don't use the testnet entry-points as 
-hardcoded or default interfaces in any applications you ship to users*. When
-shipping applications, the best practice is to provide your own default
-connectivity solutions, if needed and applicable, or in most cases, simply
-leave it up to the user which networks to connect to, and how.
-
-The testnet runs the very latest version of Reticulum (often even a short while
-before it is publicly released). Sometimes experimental versions of Reticulum
-might be deployed to nodes on the testnet, which means strange behaviour might
-occur. If none of that scares you, you can join the testnet via either TCP or
-I2P. Just add one of the following interfaces to your Reticulum configuration
-file:
-
-```
-# TCP/IP interface to the RNS Amsterdam Hub
-  [[RNS Testnet Amsterdam]]
-    type = TCPClientInterface
-    enabled = yes
-    target_host = amsterdam.connect.reticulum.network
-    target_port = 4965
-
-# TCP/IP interface to the BetweenTheBorders Hub (community-provided)
-  [[RNS Testnet BetweenTheBorders]]
-    type = TCPClientInterface
-    enabled = yes
-    target_host = reticulum.betweentheborders.com
-    target_port = 4242
-
-```
+***Important!** Historically, a developer-targeted testnet was made available by the Reticulum project itself. As the amount of global Reticulum nodes and entrypoints have grown to a substantial quantity, this public testnet, including the Amsterdam Testnet entrypoint, is slated for de-commisioning in the first quarter of 2026. If your own instances rely on this entrypoint for connectivity, it is high time to start configuring alternatives. Reticulum now includes a full on-network interface discovery and connectivity bootstrapping system. Read the [Bootstrapping Connectivity](https://reticulum.network/manual/gettingstartedfast.html#bootstrapping-connectivity) section of the manual for pointers.*
 
 ## Support Reticulum
 You can help support the continued development of open, free and private communications systems by donating via one of the following channels:

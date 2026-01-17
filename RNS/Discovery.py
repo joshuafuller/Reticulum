@@ -2,6 +2,7 @@ import os
 import re
 import RNS
 import time
+import random
 import threading
 import ipaddress
 import subprocess
@@ -358,6 +359,7 @@ class InterfaceDiscovery():
         self.monitoring_autoconnects = False
         self.monitor_interval        = self.MONITOR_INTERVAL
         self.detach_threshold        = self.DETACH_THRESHOLD
+        self.initial_autoconnect_ran = False
 
         if not self.rns_instance: raise SystemError("Attempt to start interface discovery listener without an active RNS instance")
         self.storagepath = os.path.join(RNS.Reticulum.storagepath, "discovery", "interfaces")
@@ -368,7 +370,7 @@ class InterfaceDiscovery():
             RNS.Transport.register_announce_handler(self.handler)
             threading.Thread(target=self.connect_discovered, daemon=True).start()
 
-    def list_discovered_interfaces(self):
+    def list_discovered_interfaces(self, only_available=False, only_transport=False):
         now = time.time()
         discovered_interfaces = []
         discovery_sources = RNS.Reticulum.interface_discovery_sources()
@@ -395,7 +397,14 @@ class InterfaceDiscovery():
                     else:                                      info["status"] = "available"
 
                     info["status_code"] = self.STATUS_CODE_MAP[info["status"]]
-                    discovered_interfaces.append(info)
+                    if not only_available and not only_transport: discovered_interfaces.append(info)
+                    else:
+                        should_append = True
+                        status = info["status"]
+                        transport = info["transport"]
+                        if only_available and status != "available": should_append = False
+                        if only_transport and not transport:         should_append = False
+                        if should_append: discovered_interfaces.append(info)
 
             except Exception as e:
                 RNS.log(f"Error while loading discovered interface data: {e}", RNS.LOG_ERROR)
@@ -475,6 +484,7 @@ class InterfaceDiscovery():
             time.sleep(self.monitor_interval)
             detached_interfaces = []
             online_interfaces = 0
+            autoconnected_interfaces = self.autoconnect_count()
             for interface in self.monitored_interfaces:
                 try:
                     if interface.online:
@@ -497,7 +507,11 @@ class InterfaceDiscovery():
                 except Exception as e:
                     RNS.log(f"Error while checking auto-connected interface state for {interface}: {e}", RNS.LOG_ERROR)
 
-            if online_interfaces >= RNS.Reticulum.max_autoconnected_interfaces():
+            max_autoconnected_interfaces = RNS.Reticulum.max_autoconnected_interfaces()
+            free_slots = max(0, max_autoconnected_interfaces - autoconnected_interfaces)
+            reserved_slots = max_autoconnected_interfaces//4
+
+            if online_interfaces >= max_autoconnected_interfaces:
                 for interface in RNS.Transport.interfaces:
                     if hasattr(interface, "bootstrap_only") and interface.bootstrap_only == True:
                         RNS.log(f"Tearing down bootstrap-only {interface} since target connected auto-discovered interface count has been reached", RNS.LOG_INFO)
@@ -508,6 +522,13 @@ class InterfaceDiscovery():
                     RNS.log(f"No auto-discovered interfaces connected, re-enabling bootstrap interfaces", RNS.LOG_NOTICE)
                     for config in RNS.Reticulum.get_instance().bootstrap_configs:
                         RNS.Reticulum.get_instance()._synthesize_interface(config, config["name"])
+
+            if self.initial_autoconnect_ran and free_slots > reserved_slots:
+                candidate_interfaces = self.list_discovered_interfaces(only_available=True, only_transport=True)
+                if len(candidate_interfaces) > 0:
+                    random.shuffle(candidate_interfaces)
+                    selected_interface = candidate_interfaces[0]
+                    if not self.interface_exists(selected_interface): self.autoconnect(selected_interface)
 
             for interface in detached_interfaces:
                 try: self.teardown_interface(interface)
@@ -528,13 +549,40 @@ class InterfaceDiscovery():
     def connect_discovered(self):
         if RNS.Reticulum.should_autoconnect_discovered_interfaces():
             try:
-                discovered_interfaces = self.list_discovered_interfaces()
+                discovered_interfaces = self.list_discovered_interfaces(only_transport=True)
                 for info in discovered_interfaces:
                     if self.autoconnect_count() >= RNS.Reticulum.max_autoconnected_interfaces(): break
                     self.autoconnect(info)
 
+                self.initial_autoconnect_ran = True
+
             except Exception as e:
                 RNS.log(f"Error while reconnecting discovered interfaces: {e}", RNS.LOG_ERROR)
+
+    def endpoint_hash(self, info):
+        endpoint_specifier = ""
+        if "reachable_on" in info: endpoint_specifier += str(info["reachable_on"])
+        if "port" in info:         endpoint_specifier += ":"+str(info["port"])
+        endpoint_hash = RNS.Identity.full_hash(endpoint_specifier.encode("utf-8"))
+        return endpoint_hash
+
+    def interface_exists(self, info):
+        exists = False
+        for interface in RNS.Transport.interfaces:
+            if hasattr(interface, "autoconnect_hash") and interface.autoconnect_hash == self.endpoint_hash(info):
+                exists = True
+                break
+            
+            else:
+                dest_match = "reachable_on" in info and hasattr(interface, "target_ip") and interface.target_ip == info["reachable_on"]
+                port_match = not "port" in info or (hasattr(interface, "target_port") and "port" in info and interface.target_port == info["port"])
+                b32d_match = "reachable_on" in info and hasattr(interface, "b32") and interface.b32 == info["reachable_on"]
+
+                if (dest_match and port_match) or b32d_match:
+                    exists = True
+                    break
+
+        return exists
 
     def autoconnect(self, info):
         try:
@@ -543,24 +591,8 @@ class InterfaceDiscovery():
                 if autoconnected_count < RNS.Reticulum.max_autoconnected_interfaces():
                     interface_type = info["type"]
                     if interface_type in self.AUTOCONNECT_TYPES:
-                        endpoint_specifier = ""
-                        if "reachable_on" in info: endpoint_specifier += str(info["reachable_on"])
-                        if "port" in info:         endpoint_specifier += ":"+str(info["port"])
-                        endpoint_hash = RNS.Identity.full_hash(endpoint_specifier.encode("utf-8"))
-                        exists = False
-                        for interface in RNS.Transport.interfaces:
-                            if hasattr(interface, "autoconnect_hash") and interface.autoconnect_hash == endpoint_hash:
-                                exists = True
-                                break
-                            
-                            else:
-                                dest_match = "reachable_on" in info and hasattr(interface, "target_ip") and interface.target_ip == info["reachable_on"]
-                                port_match = not "port" in info or (hasattr(interface, "target_port") and "port" in info and interface.target_port == info["port"])
-                                b32d_match = "reachable_on" in info and hasattr(interface, "b32") and interface.b32 == info["reachable_on"]
-
-                                if (dest_match and port_match) or b32d_match:
-                                    exists = True
-                                    break
+                        endpoint_hash = self.endpoint_hash(info)
+                        exists = self.interface_exists(info)
 
                         if exists: RNS.log(f"Discovered {interface_type} already exists, not auto-connecting", RNS.LOG_DEBUG)
                         else:

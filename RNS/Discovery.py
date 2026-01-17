@@ -1,7 +1,9 @@
 import os
+import re
 import RNS
 import time
 import threading
+import ipaddress
 import subprocess
 from .vendor import umsgpack as msgpack
 
@@ -113,11 +115,18 @@ class InterfaceAnnouncer():
                         exec_stdout = exec_result.stdout.decode("utf-8")
                         if exec_result.returncode != 0: raise ValueError("Non-zero exit code from subprocess")
                         reachable_on = self.sanitize(exec_stdout)
+                        if not (is_ip_address(reachable_on) or is_hostname(reachable_on)):
+                            raise ValueError(f"Valid IP address or hostname was not found in external script output \"{reachable_on}\"")
 
                 except Exception as e:
                     RNS.log(f"Error while getting reachable_on from executable at {interface.reachable_on}: {e}", RNS.LOG_ERROR)
                     RNS.log(f"Aborting discovery announce", RNS.LOG_ERROR)
                     return None
+
+            if not (is_ip_address(reachable_on) or is_hostname(reachable_on)):
+                RNS.log(f"The configured reachable_on parameter \"{reachable_on}\" for {interface} is not a valid IP address or hostname", RNS.LOG_ERROR)
+                RNS.log(f"Aborting discovery announce", RNS.LOG_ERROR)
+                return None
 
             if interface_type in ["BackboneInterface", "TCPServerInterface"]:
                 info[REACHABLE_ON]    = reachable_on
@@ -233,6 +242,10 @@ class InterfaceAnnounceHandler:
                                 "longitude":    unpacked[LONGITUDE],
                                 "height":       unpacked[HEIGHT]}
 
+                        if REACHABLE_ON in unpacked:
+                            if not (is_ip_address(unpacked[REACHABLE_ON]) or is_hostname(unpacked[REACHABLE_ON])):
+                                raise ValueError("Invalid data in reachable_on field of announce")
+
                         if IFAC_NETNAME in unpacked: info["ifac_netname"] = unpacked[IFAC_NETNAME]
                         if IFAC_NETKEY  in unpacked: info["ifac_netkey"]  = unpacked[IFAC_NETKEY]
 
@@ -319,7 +332,7 @@ class InterfaceAnnounceHandler:
                     if self.callback and callable(self.callback): self.callback(info)
 
         except Exception as e:
-            RNS.log(f"An error occurred while trying to decode discovered interface. The contained exception was: {e}", RNS.LOG_ERROR)
+            RNS.log(f"An error occurred while trying to decode discovered interface. The contained exception was: {e}", RNS.LOG_DEBUG)
 
 class InterfaceDiscovery():
     THRESHOLD_UNKNOWN = 24*60*60
@@ -670,3 +683,17 @@ class BlackholeUpdater():
                 RNS.trace_exception(e)
 
             time.sleep(self.job_interval)
+
+def is_ip_address(address_string):
+    try:
+        ipaddress.ip_address(address_string)
+        return True
+    except: return False
+
+def is_hostname(hostname):
+    if hostname[-1] == ".": hostname = hostname[:-1]
+    if len(hostname) > 253: return False
+    components = hostname.split(".")
+    if re.match(r"[0-9]+$", components[-1]): return False
+    allowed = re.compile(r"(?!-)[a-z0-9-]{1,63}(?<!-)$", re.IGNORECASE)
+    return all(allowed.match(label) for label in components)

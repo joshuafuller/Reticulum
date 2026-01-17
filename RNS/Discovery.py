@@ -382,6 +382,8 @@ class InterfaceDiscovery():
                 if heard_delta > self.THRESHOLD_REMOVE: should_remove = True
                 elif discovery_sources and not "network_id" in info: should_remove = True
                 elif discovery_sources and not bytes.fromhex(info["network_id"]) in discovery_sources: should_remove = True
+                elif "reachable_on" in info:
+                    if not (is_ip_address(info["reachable_on"]) or is_hostname(info["reachable_on"])): should_remove = True
 
                 if should_remove:
                     os.unlink(filepath)

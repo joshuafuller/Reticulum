@@ -1,3 +1,25 @@
+### 2026-01-17: RNS 1.1.3
+
+**Changes**
+- Improved discovered interface auto-connect handling
+- Improved interface discovery handling
+- Added `discovered_interfaces` API method
+- Fixed a potential race condition in request timeout handling
+- Fixed a regression in resource file transfers
+
+**Release Hashes**
+```
+1de9b46c8f24931fa41974664ddbf4251d3fdd069be4de03c64b42a7cf4f8fb4 rns-1.1.3-py3-none-any.whl
+eac8d223fcb6ce94e1bd3f04730d8542675caf4b22286e11988e9402ea9b69c0 rnspure-1.1.3-py3-none-any.whl
+```
+
+**Release Signatures**
+Release artifacts include `rsg` signature files that can be validated against the RNS release signing identity `<bc7291552be7a58f361522990465165c>` using `rnid`:
+
+```sh
+rnid -i bc7291552be7a58f361522990465165c -V rns-1.1.3-py3-none-any.whl.rsg
+```
+
 ### 2026-01-04: RNS 1.1.0
 
 Enjoy.

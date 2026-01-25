@@ -230,7 +230,7 @@ probably occur as real-world use is explored and understood. The API and wire-fo
 can be considered stable.
 
 ## Dependencies
-The installation of the default `rns` package requires the dependencies listed
+The installation of the default `rns` package requires only two external dependencies, listed
 below. Almost all systems and distributions have readily available packages for
 these dependencies, and when the `rns` package is installed with `pip`, they
 will be downloaded and installed as well.

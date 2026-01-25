@@ -261,7 +261,7 @@ Primitives](#cryptographic-primitives) section of this document.
 ## Bootstrapping Connectivity
 
 Reticulum is not a service you subscribe to, nor is it a single global network you "join".
-Reticulum itself provides functionality for discovering available public interfaces
+Reticulum provides functionality for discovering available public interfaces
 over the network itself, and the broader community has provided various directories
 of publicly available entrypoints to bootstrap connectivity.
 

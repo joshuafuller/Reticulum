@@ -127,13 +127,16 @@ class Identity:
         :returns: An :ref:`RNS.Identity<api-identity>` instance that can be used to create an outgoing :ref:`RNS.Destination<api-destination>`, or *None* if the destination is unknown.
         """
         if from_identity_hash:
-            for destination_hash in Identity.known_destinations:
-                if target_hash == Identity.truncated_hash(Identity.known_destinations[destination_hash][2]):
+            with Identity.known_destinations_lock:
+                destination_hashes = list(Identity.known_destinations.keys())
+            for destination_hash in destination_hashes:
+                entry = Identity.known_destinations.get(destination_hash)
+                if entry is None: continue
+                if target_hash == Identity.truncated_hash(entry[2]):
                     if not _no_use: RNS.Reticulum.get_instance()._used_destination_data(destination_hash)
-                    identity_data = Identity.known_destinations[destination_hash]
                     identity = Identity(create_keys=False)
-                    identity.load_public_key(identity_data[2])
-                    identity.app_data = identity_data[3]
+                    identity.load_public_key(entry[2])
+                    identity.app_data = entry[3]
                     return identity
 
             return None
@@ -285,8 +288,12 @@ class Identity:
     def _retain_identity(identity_hash):
         try:
             retained = False
-            for destination_hash in Identity.known_destinations:
-                if identity_hash == Identity.truncated_hash(Identity.known_destinations[destination_hash][2]):
+            with Identity.known_destinations_lock:
+                destination_hashes = list(Identity.known_destinations.keys())
+            for destination_hash in destination_hashes:
+                entry = Identity.known_destinations.get(destination_hash)
+                if entry is None: continue
+                if identity_hash == Identity.truncated_hash(entry[2]):
                     if Identity._retain_destination_data(destination_hash): retained = True
 
             return retained
@@ -302,7 +309,9 @@ class Identity:
         no_path    = 0
         retained   = 0
         never_used = 0
-        for destination_hash in Identity.known_destinations:
+        with Identity.known_destinations_lock:
+            destination_hashes = list(Identity.known_destinations.keys())
+        for destination_hash in destination_hashes:
             try:
                 if RNS.Transport.has_path(destination_hash): has_path = True
                 else:

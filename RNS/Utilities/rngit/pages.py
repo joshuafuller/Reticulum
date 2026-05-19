@@ -1147,7 +1147,7 @@ class NomadNetworkNode():
         
         # Breadcrumb navigation
         repo_link = self.m_link(repo_name, self.PATH_REPO, g=group_name, r=repo_name)
-        breadcrumb = f">>\n{self.m_link('Node', self.PATH_INDEX)} / {self.m_link(group_name, self.PATH_GROUP, g=group_name)} / {repo_link}"
+        breadcrumb = f">>\n{self.m_link('Node', self.PATH_INDEX)} / {self.m_link(group_name, self.PATH_GROUP, g=group_name)} / {repo_link} / stats"
         nav_parts.append(breadcrumb + "\n")
 
         repo = self.get_accessible_repository(remote_identity, group_name, repo_name)

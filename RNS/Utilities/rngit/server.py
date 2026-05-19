@@ -558,7 +558,7 @@ class ReticulumGitClient():
             repo_path = f"{group}/{repo}"
 
             request_data = {self.IDX_REPOSITORY: repo_path}
-            response, metadata = self.send_request(self.PATH_CREATE, request_data, timeout=30)
+            response, metadata = self.send_request(self.PATH_CREATE, request_data, timeout=120)
 
             if not response or not isinstance(response, bytes): self.abort("No response from remote")
 
@@ -618,7 +618,7 @@ class ReticulumGitClient():
 
             request_data = {self.IDX_REPOSITORY: repo_path, "source": source}
             print(f"Remote is {operation_name.lower()}ing repository to {repo_path}...")
-            response, metadata = self.send_request(path, request_data, timeout=900)
+            response, metadata = self.send_request(path, request_data, timeout=7200)
 
             if not response or not isinstance(response, bytes): self.abort("No response from remote")
 
@@ -662,7 +662,7 @@ class ReticulumGitClient():
 
             request_data = {self.IDX_REPOSITORY: repo_path}
             print(f"Remote is syncing repository...")
-            response, metadata = self.send_request(self.PATH_SYNC, request_data, timeout=900)
+            response, metadata = self.send_request(self.PATH_SYNC, request_data, timeout=7200)
 
             if not response or not isinstance(response, bytes): self.abort("No response from remote")
 
@@ -750,7 +750,7 @@ class ReticulumGitClient():
             repo_path = f"{group}/{repo}"
             
             request_data = {self.IDX_REPOSITORY: repo_path, "operation": "list"}
-            response, metadata = self.send_request(self.PATH_RELEASE, request_data, timeout=30)
+            response, metadata = self.send_request(self.PATH_RELEASE, request_data, timeout=120)
             print("\r                       \r", end="")
 
             if not response or not isinstance(response, bytes): self.abort("No response from remote")
@@ -809,7 +809,7 @@ class ReticulumGitClient():
             repo_path = f"{group}/{repo}"
             
             request_data = {self.IDX_REPOSITORY: repo_path, "operation": "view", "tag": target}
-            response, metadata = self.send_request(self.PATH_RELEASE, request_data, timeout=30)
+            response, metadata = self.send_request(self.PATH_RELEASE, request_data, timeout=300)
             print("\r                       \r", end="")
             
             if not response or not isinstance(response, bytes): self.abort("No response from remote")
@@ -907,7 +907,7 @@ class ReticulumGitClient():
                 elif offline: return local_manifest_dir+name
                 self.transfer_label = name
                 request_data = {self.IDX_REPOSITORY: repo_path, "operation": "fetch", "tag": tag, "artifact": name}
-                response, metadata = self.send_request(self.PATH_RELEASE, request_data, timeout=30, progress=True)
+                response, metadata = self.send_request(self.PATH_RELEASE, request_data, timeout=7200, progress=True)
                 print("\r                       \r", end="")
 
                 if not response: self.abort(f"No response from remote")
@@ -1067,7 +1067,7 @@ class ReticulumGitClient():
                              "tag": tag, "hash": commit_hash,
                              "notes": notes, "notes_format": "markdown" }
             
-            response, metadata = self.send_request(self.PATH_RELEASE, request_data, timeout=30)
+            response, metadata = self.send_request(self.PATH_RELEASE, request_data, timeout=120)
             if not response or not isinstance(response, bytes): self.abort("No response from remote during release init")
             
             status_byte = response[0]
@@ -1093,7 +1093,7 @@ class ReticulumGitClient():
                                  "tag": tag, "artifact_name": artifact,
                                  "artifact_data": artifact_data }
                 
-                response, metadata = self.send_request(self.PATH_RELEASE, request_data, timeout=300)
+                response, metadata = self.send_request(self.PATH_RELEASE, request_data, timeout=7200)
                 
                 if not response or not isinstance(response, bytes) or response[0] != 0:
                     error_msg = response[1:].decode("utf-8", errors="ignore") if response else "Unknown error"
@@ -1106,7 +1106,7 @@ class ReticulumGitClient():
             request_data = { self.IDX_REPOSITORY: repo_path,
                              "operation": "create", "step": "finalize", "tag": tag }
             
-            response, metadata = self.send_request(self.PATH_RELEASE, request_data, timeout=30)
+            response, metadata = self.send_request(self.PATH_RELEASE, request_data, timeout=300)
             
             if not response or not isinstance(response, bytes): self.abort("No response from remote during finalize")
             
@@ -1149,7 +1149,7 @@ class ReticulumGitClient():
             request_data = { self.IDX_REPOSITORY: repo_path,
                              "operation": "delete", "tag": target }
             
-            response, metadata = self.send_request(self.PATH_RELEASE, request_data, timeout=30)
+            response, metadata = self.send_request(self.PATH_RELEASE, request_data, timeout=120)
             
             if not response or not isinstance(response, bytes): self.abort("No response from remote")
             
@@ -1192,7 +1192,7 @@ class ReticulumGitClient():
             request_data = { self.IDX_REPOSITORY: repo_path,
                              "operation": "latest", "tag": target }
             
-            response, metadata = self.send_request(self.PATH_RELEASE, request_data, timeout=30)
+            response, metadata = self.send_request(self.PATH_RELEASE, request_data, timeout=120)
             
             if not response or not isinstance(response, bytes): self.abort("No response from remote")
             
@@ -1228,7 +1228,7 @@ class ReticulumGitClient():
 
             request_data = {self.IDX_GROUP: group, "operation": "gperms", "step": "get"}
 
-            response, metadata = self.send_request(self.PATH_PERMS, request_data, timeout=30)
+            response, metadata = self.send_request(self.PATH_PERMS, request_data, timeout=120)
             if not response or not isinstance(response, bytes): self.abort("No response from remote")
 
             status_byte = response[0]
@@ -1247,7 +1247,7 @@ class ReticulumGitClient():
 
             request_data = {self.IDX_GROUP: group, "operation": "gperms", "step": "set", "content": content}
 
-            response, metadata = self.send_request(self.PATH_PERMS, request_data, timeout=30)
+            response, metadata = self.send_request(self.PATH_PERMS, request_data, timeout=120)
             if not response or not isinstance(response, bytes): self.abort("No response from remote")
 
             status_byte = response[0]
@@ -1279,7 +1279,7 @@ class ReticulumGitClient():
 
             request_data = {self.IDX_REPOSITORY: repo_path, "operation": "rperms", "step": "get"}
 
-            response, metadata = self.send_request(self.PATH_PERMS, request_data, timeout=30)
+            response, metadata = self.send_request(self.PATH_PERMS, request_data, timeout=120)
             if not response or not isinstance(response, bytes): self.abort("No response from remote")
 
             status_byte = response[0]
@@ -1298,7 +1298,7 @@ class ReticulumGitClient():
 
             request_data = {self.IDX_REPOSITORY: repo_path, "operation": "rperms", "step": "set", "content": content}
 
-            response, metadata = self.send_request(self.PATH_PERMS, request_data, timeout=30)
+            response, metadata = self.send_request(self.PATH_PERMS, request_data, timeout=120)
             if not response or not isinstance(response, bytes): self.abort("No response from remote")
 
             status_byte = response[0]
@@ -1333,7 +1333,7 @@ class ReticulumGitClient():
             repo_path = f"{group}/{repo}"
             
             request_data = {self.IDX_REPOSITORY: repo_path, "operation": "list", "scope": scope}
-            response, metadata = self.send_request(self.PATH_WORK, request_data, timeout=30)
+            response, metadata = self.send_request(self.PATH_WORK, request_data, timeout=120)
             print("\r                       \r", end="")
             
             if not response or not isinstance(response, bytes): self.abort("No response from remote")
@@ -1391,7 +1391,7 @@ class ReticulumGitClient():
             repo_path = f"{group}/{repo}"
             
             request_data = {self.IDX_REPOSITORY: repo_path, "operation": "view", "doc_id": doc_id, "scope": scope}
-            response, metadata = self.send_request(self.PATH_WORK, request_data, timeout=30)
+            response, metadata = self.send_request(self.PATH_WORK, request_data, timeout=120)
             print("\r                       \r", end="")
             
             if not response or not isinstance(response, bytes): self.abort("No response from remote")
@@ -1476,7 +1476,7 @@ class ReticulumGitClient():
                              "title": title, "content": content, "format": "markdown",
                              "signature": signature }
             
-            response, metadata = self.send_request(self.PATH_WORK, request_data, timeout=30)
+            response, metadata = self.send_request(self.PATH_WORK, request_data, timeout=600)
             if not response or not isinstance(response, bytes): self.abort("No response from remote")
             
             status_byte = response[0]
@@ -1521,7 +1521,7 @@ class ReticulumGitClient():
                              "title": title, "content": content, "format": "markdown",
                              "signature": signature }
             
-            response, metadata = self.send_request(self.PATH_WORK, request_data, timeout=30)
+            response, metadata = self.send_request(self.PATH_WORK, request_data, timeout=600)
             if not response or not isinstance(response, bytes): self.abort("No response from remote")
             
             status_byte = response[0]
@@ -1557,7 +1557,7 @@ class ReticulumGitClient():
             repo_path = f"{group}/{repo}"
 
             request_data = {self.IDX_REPOSITORY: repo_path, "operation": "view", "doc_id": doc_id, "scope": scope}
-            response, metadata = self.send_request(self.PATH_WORK, request_data, timeout=30)
+            response, metadata = self.send_request(self.PATH_WORK, request_data, timeout=600)
             if not response or not isinstance(response, bytes): self.abort("No response from remote")
             
             status_byte = response[0]
@@ -1579,7 +1579,7 @@ class ReticulumGitClient():
             request_data = { self.IDX_REPOSITORY: repo_path, "operation": "edit", "doc_id": doc_id,
                              "scope": scope, "content": content, "title": title, "signature": signature }
             
-            response, metadata = self.send_request(self.PATH_WORK, request_data, timeout=30)
+            response, metadata = self.send_request(self.PATH_WORK, request_data, timeout=600)
             if not response or not isinstance(response, bytes): self.abort("No response from remote")
             
             status_byte = response[0]
@@ -1619,7 +1619,7 @@ class ReticulumGitClient():
             request_data = { self.IDX_REPOSITORY: repo_path,
                              "operation": "delete", "doc_id": doc_id, "scope": scope }
             
-            response, metadata = self.send_request(self.PATH_WORK, request_data, timeout=30)
+            response, metadata = self.send_request(self.PATH_WORK, request_data, timeout=120)
             if not response or not isinstance(response, bytes): self.abort("No response from remote")
             
             status_byte = response[0]
@@ -1658,7 +1658,7 @@ class ReticulumGitClient():
                              "operation": "comment", "doc_id": doc_id, "scope": scope,
                              "content": content, "format": "markdown" }
             
-            response, metadata = self.send_request(self.PATH_WORK, request_data, timeout=30)
+            response, metadata = self.send_request(self.PATH_WORK, request_data, timeout=600)
             if not response or not isinstance(response, bytes): self.abort("No response from remote")
             
             status_byte = response[0]
@@ -1696,7 +1696,7 @@ class ReticulumGitClient():
             request_data = {self.IDX_REPOSITORY: repo_path,
                             "operation": "complete", "doc_id": doc_id}
             
-            response, metadata = self.send_request(self.PATH_WORK, request_data, timeout=30)
+            response, metadata = self.send_request(self.PATH_WORK, request_data, timeout=120)
             
             if not response or not isinstance(response, bytes): self.abort("No response from remote")
             
@@ -1735,7 +1735,7 @@ class ReticulumGitClient():
             request_data = {self.IDX_REPOSITORY: repo_path,
                             "operation": "activate", "doc_id": doc_id}
             
-            response, metadata = self.send_request(self.PATH_WORK, request_data, timeout=30)
+            response, metadata = self.send_request(self.PATH_WORK, request_data, timeout=120)
             
             if not response or not isinstance(response, bytes): self.abort("No response from remote")
             
@@ -1774,7 +1774,7 @@ class ReticulumGitClient():
             request_data = {self.IDX_REPOSITORY: repo_path,
                             "operation": "perms", "doc_id": doc_id, "step": "get"}
             
-            response, metadata = self.send_request(self.PATH_WORK, request_data, timeout=30)
+            response, metadata = self.send_request(self.PATH_WORK, request_data, timeout=120)
             if not response or not isinstance(response, bytes): self.abort("No response from remote")
             
             status_byte = response[0]
@@ -1795,7 +1795,7 @@ class ReticulumGitClient():
                             "operation": "perms", "doc_id": doc_id, "step": "set",
                             "content": content}
             
-            response, metadata = self.send_request(self.PATH_WORK, request_data, timeout=30)
+            response, metadata = self.send_request(self.PATH_WORK, request_data, timeout=120)
             if not response or not isinstance(response, bytes): self.abort("No response from remote")
             
             status_byte = response[0]

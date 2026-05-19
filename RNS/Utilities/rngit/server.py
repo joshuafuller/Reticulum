@@ -1119,7 +1119,7 @@ class ReticulumGitClient():
         
         except Exception as e: self.abort(f"Error creating release: {e}")
         finally:
-            if self.link: self.link.teardown()
+            if hasattr(self, "link") and self.link: self.link.teardown()
 
     def delete_release(self, remote=None, target=None):
         if not remote: self.abort(f"No remote specified")

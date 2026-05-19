@@ -978,7 +978,7 @@ class NomadNetworkNode():
 
         # Commit message
         if commit_info.get("message"):
-            content_parts.append(self.m_escape(commit_info["message"]) + "\n")
+            content_parts.append(self.format_commit(commit_info["message"]) + "\n")
             content_parts.append("\n")
 
         # Changed files
@@ -2345,6 +2345,15 @@ class NomadNetworkNode():
         
         return "\n".join(formatted_lines)
 
+    def format_commit(self, diff_text):
+        lines = diff_text.replace("\\", "\\\\").split("\n")
+        formatted_lines = []
+
+        for line in lines:
+            if line.startswith("-"): formatted_lines.append(self.m_escape(f"\\{line}"))
+            else:                    formatted_lines.append(self.m_escape(line))
+
+        return "\n".join(formatted_lines)
 
     def repository_thanks(self, repo_path, add=False, link_id=None):
         if add:

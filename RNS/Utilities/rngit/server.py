@@ -3912,6 +3912,8 @@ class ReticulumGitNode():
                 doc_dir = d
                 break
 
+        if not doc_dir: return self.RES_NOT_FOUND.to_bytes(1, "big") + b"Not found"
+
         doc_dir = os.path.join(work_path, scope, str(doc_id))
         root_path = os.path.join(doc_dir, "root")
 
@@ -4075,6 +4077,8 @@ class ReticulumGitNode():
                 doc_dir = d
                 break
         
+        if not doc_dir: return self.RES_NOT_FOUND.to_bytes(1, "big") + b"Not found"
+
         doc_dir = os.path.join(work_path, scope, str(doc_id))
         root_path = os.path.join(doc_dir, "root")
 

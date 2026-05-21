@@ -947,6 +947,7 @@ class ReticulumGitClient():
                 manifest_out = os.path.basename(f"{release_name}_{release_version}.{self.MSG_EXT}")
                 with open(manifest_out, "wb") as fh: fh.write(rsg)
 
+                fetch_artifacts = []
                 artifacts = release_meta.get("artifacts", [])
                 if not artifacts: self.abort("Release manifest contains no artifacts")
                 if artifact == "all": fetch_artifacts = artifacts

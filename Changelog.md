@@ -3,6 +3,7 @@
 This maintenance release fixes a number of bugs.
 
 **Changes**
+- Added ability to use wildcards and pattern matches in `rngit` artifact fetch targets
 - Fixed channel outlet sequence holes and ghost envelopes on dying outlets by neutral
 - Fixed known destination iteration races by neutral
 - Fixed timeout deadlock in `rnsh` by neutral

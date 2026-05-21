@@ -65,4 +65,6 @@ def sha512(data):
 
 def file_sha256(file):
     if not hashlib: raise SystemError("The hashlib module is not available on this system")
+    # TODO: Could implement fallback for old snakes here
+    if not hasattr(hashlib, "file_digest"): raise SystemError("The file_digest method is not available on this system. This functionality requires Python 3.11 or later.")
     else: return hashlib.file_digest(file, "sha256").digest()

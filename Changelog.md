@@ -1,3 +1,38 @@
+### 2026-05-21: RNS 1.3.0
+
+This maintenance release fixes a number of bugs.
+
+**Changes**
+- Fixed channel outlet sequence holes and ghost envelopes on dying outlets by neutral
+- Fixed known destination iteration races by neutral
+- Fixed timeout deadlock in `rnsh` by neutral
+- Fixed commit message rendering in `rngit`
+- Fixed various minor bugs and output inconsistencies in `rngit`
+- Adjusted timeouts for remote operations in `rngit`
+- Updated documentation
+
+**Verified Retrieval**
+You can retrieve and verify this release over Reticulum using the built-in `rngit release` utility. To download all artifacts, and the release manifest for future updates, you can use the following command:
+
+```sh
+rngit release rns://7649a50d84610232d1416b41d2896aff/reticulum/reticulum fetch latest:all --signer bc7291552be7a58f361522990465165c
+```
+
+To retrieve only the `.whl` package for installation, you can use:
+
+```sh
+rngit release rns://7649a50d84610232d1416b41d2896aff/reticulum/reticulum fetch latest:rns-1.2.9-py3-none-any.whl --signer bc7291552be7a58f361522990465165c
+```
+
+**Release Signatures**
+Release artifacts include a signed `rsm` release manifest and `rsg` signature files that can be validated against the RNS release signing identity `<bc7291552be7a58f361522990465165c>` using `rnid`. To verify files, download the `rsm` and `rsg` signatures, make sure they are in the same folder as the release artifact, and run `rnid` signature verification with the release identity as the required signer:
+
+```sh
+rnid -i bc7291552be7a58f361522990465165c -V manifest.rsm *.rsg
+```
+
+The `rnid` utility will then verify the signatures, and display whether they are valid. If the signature cannot be verified, the release has been tampered with and should be discarded.
+
 ### 2026-05-19: RNS 1.2.9
 
 This release completes the operational functionality of the `rngit` system, which now has full release creation, fetch and verified update support using the `rngit release` command. Additionally, two chapters have been added to the manual should cover all the things that `rngit` is currently capable of.

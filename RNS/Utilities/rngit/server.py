@@ -33,6 +33,7 @@ import os
 import sys
 import time
 import shutil
+import fnmatch
 import argparse
 import threading
 import subprocess
@@ -947,14 +948,14 @@ class ReticulumGitClient():
                 manifest_out = os.path.basename(f"{release_name}_{release_version}.{self.MSG_EXT}")
                 with open(manifest_out, "wb") as fh: fh.write(rsg)
 
+                def match_artifacts(match_expression, manifest_artifacts):
+                    return [entry for entry in manifest_artifacts if fnmatch.fnmatch(entry.get("name", ""), match_expression)]
+
                 fetch_artifacts = []
                 artifacts = release_meta.get("artifacts", [])
                 if not artifacts: self.abort("Release manifest contains no artifacts")
                 if artifact == "all": fetch_artifacts = artifacts
-                else:
-                    for entry in artifacts:
-                        if entry["name"] == artifact:
-                            fetch_artifacts = [entry]; break
+                else:                 fetch_artifacts = match_artifacts(artifact, artifacts)
                 
                 valid_count = 0
                 if not fetch_artifacts: self.abort("No available artifacts specified for fetch")

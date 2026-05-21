@@ -332,22 +332,23 @@ class ReticulumGitClient():
         self.progress_enabled       = True
         self.transfer_label         = "unknown"
 
-        if not ReticulumGitNode._ensure_git(): RNS.log("The \"git\" command is not available. Aborting server startup.", RNS.LOG_ERROR)
+        if configdir != None: self.configdir = configdir
         else:
-            if configdir != None: self.configdir = configdir
-            else:
-                if os.path.isdir(self.userdir+"/.config/rngit") and os.path.isfile(self.userdir+"/.config/rngit/config"): self.configdir = self.userdir+"/.rngit/reticulum"
-                else: self.configdir = self.userdir+"/.rngit"
-            
-            self.logfile = self.configdir+"/client_log"
-            self.configpath = self.configdir+"/client_config"
-            self.identitypath = identitypath or self.configdir+"/client_identity"
+            if os.path.isdir(self.userdir+"/.config/rngit") and os.path.isfile(self.userdir+"/.config/rngit/config"): self.configdir = self.userdir+"/.rngit/reticulum"
+            else: self.configdir = self.userdir+"/.rngit"
 
-            if not os.path.isdir(self.configdir): os.makedirs(self.configdir)
-            
-            self.__ensure_identity()
-            self.__ensure_config()
-            self.__apply_config()
+        self.logfile = self.configdir+"/client_log"
+        self.configpath = self.configdir+"/client_config"
+        self.identitypath = identitypath or self.configdir+"/client_identity"
+
+        if not os.path.isdir(self.configdir): os.makedirs(self.configdir)
+
+        self.__ensure_identity()
+        self.__ensure_config()
+        self.__apply_config()
+
+    def _ensure_git(self):
+        if not ReticulumGitNode._ensure_git(): self.abort("The \"git\" command is not available. Aborting operation.")
 
     def __ensure_identity(self):
         if not os.path.isfile(self.identitypath):

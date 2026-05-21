@@ -214,6 +214,8 @@ async def _handle_error(errmsg: RNS.MessageBase):
 async def initiate(configdir: str, rnsconfigdir:str, identitypath: str, verbosity: int, quietness: int, noid: bool, destination: str,
                    timeout: float, command: [str] | None = None):
     global _finished, _link
+    if timeout is None:
+        timeout = RNS.Transport.PATH_REQUEST_TIMEOUT
     with process.TTYRestorer(sys.stdin.fileno()) as ttyRestorer:
         loop = asyncio.get_running_loop()
         state = InitiatorState.IS_INITIAL

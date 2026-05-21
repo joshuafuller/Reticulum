@@ -62,7 +62,7 @@ class Packet:
 
     def set_delivered_callback(self, callback: Callable[[Packet], None]):
         self.delivered_callback = callback
-        
+
     def delivered(self):
         with self.lock:
             self.state = MessageState.MSGSTATE_DELIVERED
@@ -264,6 +264,47 @@ class TestChannel(unittest.TestCase):
         self.assertEqual(0, packet.instances)
         self.assertEqual(MessageState.MSGSTATE_FAILED, packet.state)
         self.assertFalse(envelope.tracked)
+
+    def test_send_on_failing_outlet_does_not_corrupt_state(self):
+        # if outlet.send() returns a packet that never reached
+        # the wire (LinkChannelOutlet does this when the link is not ACTIVE; the
+        # returned packet has raw=None), Channel.send() must not consume a
+        # sequence number or leave a packetless envelope in _tx_ring. Before
+        # the fix, the envelope was queued before outlet.send() returned, so a
+        # "dead" return left a raw=None envelope in the ring and silently
+        # advanced _next_sequence, stalling the channel on the other end.
+        print("Channel test send on failing outlet")
+
+        original_send = self.h.outlet.send
+
+        def ghost_send(raw):
+            with self.h.outlet.lock:
+                packet = Packet(None)
+                packet.state = MessageState.MSGSTATE_FAILED
+                self.h.outlet.packets.append(packet)
+                return packet
+
+        self.h.outlet.send = ghost_send
+
+        pre_sequence = self.h.channel._next_sequence
+        self.assertEqual(0, len(self.h.channel._tx_ring))
+
+        with self.assertRaises(RNS.Channel.ChannelException):
+            self.h.channel.send(MessageTest())
+
+        # Sequence must not have been consumed.
+        self.assertEqual(pre_sequence, self.h.channel._next_sequence)
+        # _tx_ring must not contain a packetless envelope.
+        self.assertEqual(0, len(self.h.channel._tx_ring))
+
+        # A subsequent successful send should use the same sequence number as
+        # was reserved for the failed attempt.
+        self.h.outlet.send = original_send
+        envelope = self.h.channel.send(MessageTest())
+        self.assertEqual(pre_sequence, envelope.sequence)
+        self.assertIsNotNone(envelope.packet)
+        self.assertIsNotNone(envelope.packet.raw)
+        self.assertTrue(envelope in self.h.channel._tx_ring)
 
     def test_multiple_handler(self):
         print("Channel test multiple handler short circuit")

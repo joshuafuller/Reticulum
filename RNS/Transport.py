@@ -3405,6 +3405,14 @@ class Transport:
 
     @staticmethod
     def blackhole_identity(identity_hash, until=None, reason=None):
+        """
+        Blackholes an identity.
+
+        :param identity_hash: The identity hash to blackhole as *bytes*.
+        :param until: Optional unix timestamp of when the blackhole expires as *float* or *int*.
+        :param reason: Optional reason for the blackhole as *str*.
+        :returns: *True* if successful, otherwise *False*.
+        """
         try:
             if not identity_hash in Transport.blackholed_identities:
                 entry = {"source": Transport.identity.hash, "until": until, "reason": reason}
@@ -3422,6 +3430,12 @@ class Transport:
 
     @staticmethod
     def unblackhole_identity(identity_hash):
+        """
+        Lifts blackhole for an identity.
+
+        :param identity_hash: The identity hash to blackhole as *bytes*.
+        :returns: *True* if successful, otherwise *False*.
+        """
         try:
             if identity_hash in Transport.blackholed_identities:
                 Transport.blackholed_identities.pop(identity_hash)

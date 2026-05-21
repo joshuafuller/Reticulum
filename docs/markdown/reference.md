@@ -1296,3 +1296,23 @@ will announce it.
 * **Parameters:**
   * **destination_hash** – A destination hash as *bytes*.
   * **on_interface** – If specified, the path request will only be sent on this interface. In normal use, Reticulum handles this automatically, and this parameter should not be used.
+
+#### `static blackhole_identity(identity_hash, until=None, reason=None)`
+
+Blackholes an identity.
+
+* **Parameters:**
+  * **identity_hash** – The identity hash to blackhole as *bytes*.
+  * **until** – Optional unix timestamp of when the blackhole expires as *float* or *int*.
+  * **reason** – Optional reason for the blackhole as *str*.
+* **Returns:**
+  *True* if successful, otherwise *False*.
+
+#### `static unblackhole_identity(identity_hash)`
+
+Lifts blackhole for an identity.
+
+* **Parameters:**
+  **identity_hash** – The identity hash to blackhole as *bytes*.
+* **Returns:**
+  *True* if successful, otherwise *False*.

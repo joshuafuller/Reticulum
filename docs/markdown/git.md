@@ -717,9 +717,6 @@ If verification succeeds, the retrieved artifact files, along with the release m
 
 #### IMPORTANT
 Keeping the retrieved release manifest is a **very** good idea! It allows you to easily obtain future releases and updates to the software directly, while verifying they came from the same publisher.
-```rawmu
->>>
-```
 
 **Obtaining & Updating Releases Using RSM Manifests**
 

@@ -2234,6 +2234,38 @@ will announce it.</p>
 </dl>
 </dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="RNS.Transport.blackhole_identity">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">blackhole_identity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">identity_hash</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">until</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reason</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#RNS.Transport.blackhole_identity" title="Link to this definition">¶</a></dt>
+<dd><p>Blackholes an identity.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>identity_hash</strong> – The identity hash to blackhole as <em>bytes</em>.</p></li>
+<li><p><strong>until</strong> – Optional unix timestamp of when the blackhole expires as <em>float</em> or <em>int</em>.</p></li>
+<li><p><strong>reason</strong> – Optional reason for the blackhole as <em>str</em>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>True</em> if successful, otherwise <em>False</em>.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="RNS.Transport.unblackhole_identity">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">unblackhole_identity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">identity_hash</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#RNS.Transport.unblackhole_identity" title="Link to this definition">¶</a></dt>
+<dd><p>Lifts blackhole for an identity.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>identity_hash</strong> – The identity hash to blackhole as <em>bytes</em>.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>True</em> if successful, otherwise <em>False</em>.</p>
+</dd>
+</dl>
+</dd></dl>
+
 </dd></dl>
 
 </section>
@@ -2472,6 +2504,8 @@ will announce it.</p>
 <li><a class="reference internal" href="#RNS.Transport.next_hop_interface"><code class="docutils literal notranslate"><span class="pre">next_hop_interface()</span></code></a></li>
 <li><a class="reference internal" href="#RNS.Transport.await_path"><code class="docutils literal notranslate"><span class="pre">await_path()</span></code></a></li>
 <li><a class="reference internal" href="#RNS.Transport.request_path"><code class="docutils literal notranslate"><span class="pre">request_path()</span></code></a></li>
+<li><a class="reference internal" href="#RNS.Transport.blackhole_identity"><code class="docutils literal notranslate"><span class="pre">blackhole_identity()</span></code></a></li>
+<li><a class="reference internal" href="#RNS.Transport.unblackhole_identity"><code class="docutils literal notranslate"><span class="pre">unblackhole_identity()</span></code></a></li>
 </ul>
 </li>
 </ul>

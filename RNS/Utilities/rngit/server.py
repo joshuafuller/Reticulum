@@ -345,32 +345,34 @@ class ReticulumGitClient():
 
             if not os.path.isdir(self.configdir): os.makedirs(self.configdir)
             
-            if not os.path.isfile(self.identitypath):
-                identity = RNS.Identity()
-                identity.to_file(self.identitypath)
-                RNS.log(f"Identity generated and persisted to {self.identitypath}", RNS.LOG_DEBUG)
-            
-            else:
-                identity = RNS.Identity.from_file(self.identitypath)
-                RNS.log(f"Client identity loaded from {self.identitypath}", RNS.LOG_DEBUG)
-
-            if not identity: self.abort("Could not initialize client identity")
-            else:            self.identity = identity
-
-            if os.path.isfile(self.configpath):
-                try: self.config = ConfigObj(self.configpath)
-                except Exception as e:
-                    RNS.log("Could not parse the configuration at "+self.configpath, RNS.LOG_ERROR)
-                    RNS.log("Check your configuration file for errors!", RNS.LOG_ERROR)
-                    RNS.panic()
-            else:
-                RNS.log("Could not load config file, creating default configuration file...")
-                self.__create_default_config()
-                RNS.log("Default config file created. Make any necessary changes in "+self.configdir+"/config and restart rngit.")
-                RNS.log("Exiting now")
-                exit(1)
-
+            self.__ensure_identity()
+            self.__ensure_config()
             self.__apply_config()
+
+    def __ensure_identity(self):
+        if not os.path.isfile(self.identitypath):
+            identity = RNS.Identity()
+            identity.to_file(self.identitypath)
+            RNS.log(f"Identity generated and persisted to {self.identitypath}", RNS.LOG_DEBUG)
+
+        else:
+            identity = RNS.Identity.from_file(self.identitypath)
+            RNS.log(f"Client identity loaded from {self.identitypath}", RNS.LOG_DEBUG)
+
+        if not identity: self.abort("Could not initialize client identity")
+        else:            self.identity = identity
+
+    def __ensure_config(self):
+        if os.path.isfile(self.configpath):
+            try: self.config = ConfigObj(self.configpath)
+            except Exception as e:
+                RNS.log("Could not parse the configuration at "+self.configpath, RNS.LOG_ERROR)
+                RNS.log("Check your configuration file for errors!", RNS.LOG_ERROR)
+                RNS.panic()
+        else:
+            RNS.log("Could not load config file, creating default configuration file...")
+            self.__create_default_config()
+            RNS.log("Default config file created, make any necessary changes in "+self.configdir+"/config")
 
     def __create_default_config(self):
         from RNS.Utilities.rngit.client import __default_rngit_config__ as __default_rngit_client_config__
@@ -2010,9 +2012,7 @@ class ReticulumGitNode():
             else:
                 RNS.log("Could not load config file, creating default configuration file...")
                 self.__create_default_config()
-                RNS.log("Default config file created. Make any necessary changes in "+self.configdir+"/config and restart rngit.")
-                RNS.log("Exiting now")
-                exit(1)
+                RNS.log("Default config file created, make any necessary changes in "+self.configdir+"/config")
 
             self.__apply_config()
             self.__load_stats()
@@ -2221,7 +2221,7 @@ class ReticulumGitNode():
             for group_name in section:
                 RNS.log(f"Loading repositery group \"{group_name}\"", RNS.LOG_VERBOSE)
                 group_path = os.path.expanduser(section[group_name])
-                if not os.path.isdir(group_path): RNS.log(f"The path \"{group_path}\" specified for repository group \"{group_name}\" does not exist, skipping.", RNS.LOG_ERROR)
+                if not os.path.isdir(group_path): RNS.log(f"The path \"{group_path}\" specified for repository group \"{group_name}\" does not exist, skipping.", RNS.LOG_WARNING)
                 else:                             self.load_repository_group(group_name, group_path)
 
     def __resolve_identity_alias(self, alias):

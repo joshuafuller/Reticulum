@@ -4,9 +4,9 @@ This maintenance release fixes a number of bugs.
 
 **Changes**
 - Added ability to use wildcards and pattern matches in `rngit` artifact fetch targets
-- Fixed channel outlet sequence holes and ghost envelopes on dying outlets by neutral
-- Fixed known destination iteration races by neutral
-- Fixed timeout deadlock in `rnsh` by neutral
+- Fixed channel outlet sequence holes and ghost envelopes on dying outlets by **neutral**
+- Fixed known destination iteration races by **neutral**
+- Fixed timeout deadlock in `rnsh` by **neutral**
 - Fixed commit message rendering in `rngit`
 - Fixed various minor bugs and output inconsistencies in `rngit`
 - Adjusted timeouts for remote operations in `rngit`
@@ -22,7 +22,7 @@ rngit release rns://7649a50d84610232d1416b41d2896aff/reticulum/reticulum fetch l
 To retrieve only the `.whl` package for installation, you can use:
 
 ```sh
-rngit release rns://7649a50d84610232d1416b41d2896aff/reticulum/reticulum fetch latest:rns-1.2.9-py3-none-any.whl --signer bc7291552be7a58f361522990465165c
+rngit release rns://7649a50d84610232d1416b41d2896aff/reticulum/reticulum fetch latest:rns-1.3.0-py3-none-any.whl --signer bc7291552be7a58f361522990465165c
 ```
 
 **Release Signatures**

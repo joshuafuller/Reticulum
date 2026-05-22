@@ -1,4 +1,4 @@
-### 2026-05-21: RNS 1.3.1
+### 2026-05-22: RNS 1.3.1
 
 This maintenance release fixes a single bug.
 

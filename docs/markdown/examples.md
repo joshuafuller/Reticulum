@@ -1,14 +1,10 @@
 # Code Examples
 
-A number of examples are included in the source distribution of Reticulum.
-You can use these examples to learn how to write your own programs.
+A number of examples are included in the source distribution of Reticulum. You can use these examples to learn how to write your own programs.
 
 ## Minimal
 
-The *Minimal* example demonstrates the bare-minimum setup required to connect to
-a Reticulum network from your program. In about five lines of code, you will
-have the Reticulum Network Stack initialised, and ready to pass traffic in your
-program.
+The *Minimal* example demonstrates the bare-minimum setup required to connect to a Reticulum network from your program. In about five lines of code, you will have the Reticulum Network Stack initialised, and ready to pass traffic in your program.
 
 ```default
 ##########################################################
@@ -117,9 +113,7 @@ This example can also be found at [https://github.com/markqvist/Reticulum/blob/m
 
 ## Announce
 
-The *Announce* example builds upon the previous example by exploring how to
-announce a destination on the network, and how to let your program receive
-notifications about announces from relevant destinations.
+The *Announce* example builds upon the previous example by exploring how to announce a destination on the network, and how to let your program receive notifications about announces from relevant destinations.
 
 ```default
 ##########################################################
@@ -299,8 +293,7 @@ This example can also be found at [https://github.com/markqvist/Reticulum/blob/m
 
 ## Broadcast
 
-The *Broadcast* example explores how to transmit plaintext broadcast messages
-over the network.
+The *Broadcast* example explores how to transmit plaintext broadcast messages over the network.
 
 ```default
 ##########################################################
@@ -429,8 +422,7 @@ This example can also be found at [https://github.com/markqvist/Reticulum/blob/m
 
 ## Echo
 
-The *Echo* example demonstrates communication between two destinations using
-the Packet interface.
+The *Echo* example demonstrates communication between two destinations using the Packet interface.
 
 ```default
 ##########################################################
@@ -766,8 +758,7 @@ This example can also be found at [https://github.com/markqvist/Reticulum/blob/m
 
 ## Link
 
-The *Link* example explores establishing an encrypted link to a remote
-destination, and passing traffic back and forth over the link.
+The *Link* example explores establishing an encrypted link to a remote destination, and passing traffic back and forth over the link.
 
 ```default
 ##########################################################
@@ -1064,8 +1055,7 @@ This example can also be found at [https://github.com/markqvist/Reticulum/blob/m
 
 ## Identification
 
-The *Identify* example explores identifying an intiator of a link, once
-the link has been established.
+The *Identify* example explores identifying an intiator of a link, once the link has been established.
 
 ```default
 ##########################################################
@@ -1676,8 +1666,7 @@ This example can also be found at [https://github.com/markqvist/Reticulum/blob/m
 
 ## Channel
 
-The *Channel* example explores using a `Channel` to send structured
-data between peers of a `Link`.
+The *Channel* example explores using a `Channel` to send structured data between peers of a `Link`.
 
 ```default
 ##########################################################
@@ -2072,8 +2061,7 @@ This example can also be found at [https://github.com/markqvist/Reticulum/blob/m
 
 ## Buffer
 
-The *Buffer* example explores using buffered readers and writers to send
-binary data between peers of a `Link`.
+The *Buffer* example explores using buffered readers and writers to send binary data between peers of a `Link`.
 
 ```default
 ##########################################################
@@ -2399,9 +2387,7 @@ This example can also be found at [https://github.com/markqvist/Reticulum/blob/m
 
 ## Filetransfer
 
-The *Filetransfer* example implements a basic file-server program that
-allow clients to connect and download files. The program uses the Resource
-interface to efficiently pass files of any size over a Reticulum [Link](reference.md#api-link).
+The *Filetransfer* example implements a basic file-server program that allow clients to connect and download files. The program uses the Resource interface to efficiently pass files of any size over a Reticulum [Link](reference.md#api-link).
 
 ```default
 ##########################################################
@@ -3010,10 +2996,7 @@ This example can also be found at [https://github.com/markqvist/Reticulum/blob/m
 
 ## Custom Interfaces
 
-The *ExampleInterface* demonstrates creating custom interfaces for Reticulum.
-Any number of custom interfaces can be loaded and utilised by Reticulum, and
-will be fully on-par with natively included interfaces, including all supported
-[interface modes](interfaces.md#interfaces-modes) and [common configuration options](interfaces.md#interfaces-options).
+The *ExampleInterface* demonstrates creating custom interfaces for Reticulum. Any number of custom interfaces can be loaded and utilised by Reticulum, and will be fully on-par with natively included interfaces, including all supported [interface modes](interfaces.md#interfaces-modes) and [common configuration options](interfaces.md#interfaces-options).
 
 ```default
 # This example illustrates creating a custom interface

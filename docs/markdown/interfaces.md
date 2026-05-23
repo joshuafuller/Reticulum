@@ -901,10 +901,10 @@ When `discoverable` is enabled, a variety of additional options become available
 
 `reachable_on`
 : Specifies the address that remote peers should use to connect to this interface.
-  <br/>
+  
   * For TCP and Backbone interfaces, this is typically the public IP address or hostname. Do not include the port, this is fetched automatically from the interface.
   * For I2P interfaces, this is usually the I2P `b32` address. This value is fetched automatically from the `I2PInterface` once it is up and connected to the I2P network, so you should not set this manually, unless you absolutely know what you’re doing.
-  <br/>
+  
   **Dynamic Resolution:** This option also accepts a path to an external executable script or binary. If a path is provided, Reticulum will execute the script and use its `stdout` as the reachability address. This is useful for devices behind dynamic DNS, NATs, or complex cloud environments where the external IP is not known locally. The script must simply print the address to stdout and exit.
 
 #### NOTE
@@ -1064,10 +1064,10 @@ These can be used to control various aspects of interface behaviour.
 >   to bring up the interface. Defaults to `False`. For any
 >   interface to be brought up, the `enabled` option
 >   must be set to `True` or `Yes`.
->   <br/>
+>   
 > * The `mode` option allows selecting the high-level behaviour
 >   of the interface from a number of options.
->   <br/>
+>   
 >   > - The default value is `full`. In this mode, all discovery,
 >   >   meshing and transport functionality is available.
 >   > - In the `access_point` (or shorthand `ap`) mode, the
@@ -1083,15 +1083,15 @@ These can be used to control various aspects of interface behaviour.
 > * The `outgoing` option sets whether an interface is allowed
 >   to transmit. Defaults to `True`. If set to `False` or `No`
 >   the interface will only receive data, and never transmit.
->   <br/>
+>   
 > * The `network_name` option sets the virtual network name for
 >   the interface. This allows multiple separate network segments
 >   to exist on the same physical channel or medium.
->   <br/>
+>   
 > * The `passphrase` option sets an authentication passphrase on
 >   the interface. This option can be used in conjunction with the
 >   `network_name` option, or be used alone.
->   <br/>
+>   
 > * The `ifac_size` option allows customising the length of the
 >   Interface Authentication Codes carried by each packet on named
 >   and/or authenticated network segments. It is set by default to
@@ -1099,13 +1099,13 @@ These can be used to control various aspects of interface behaviour.
 >   to a custom size between 8 and 512 bits by using this option.
 >   In normal usage, this option should not be changed from the
 >   default.
->   <br/>
+>   
 > * The `announce_cap` option lets you configure the maximum
 >   bandwidth to allocate, at any given time, to propagating
 >   announces and other network upkeep traffic. It is configured at
 >   2% by default, and should normally not need to be changed. Can
 >   be set to any value between `1` and `100`.
->   <br/>
+>   
 >   > *If an interface exceeds its announce cap, it will queue announces
 >   > for later transmission. Reticulum will always prioritise propagating
 >   > announces from nearby nodes first. This ensures that the local
@@ -1126,7 +1126,7 @@ These can be used to control various aspects of interface behaviour.
 >   any. In most cases, the automatically found rate should be
 >   sufficient, but it can be configured by using the `bitrate`
 >   option, to set the interface speed in *bits per second*.
->   <br/>
+>   
 > * The `bootstrap_only` option designates an interface as a temporary
 >   bridge for initial connectivity. If this option is enabled, the
 >   interface will be monitored and automatically detached once the
@@ -1135,7 +1135,7 @@ These can be used to control various aspects of interface behaviour.
 >   for using a slow or expensive connection (such as a single LoRa
 >   link or a remote TCP tunnel) solely to discover better local
 >   infrastructure, which then supersedes the bootstrap interface.
->   <br/>
+>   
 
 ## Interface Modes
 
@@ -1152,7 +1152,7 @@ the default mode.
 
 > * The default mode is `full`. In this mode, all discovery,
 >   meshing and transport functionality is activated.
->   <br/>
+>   
 > * The `gateway` mode (or shorthand `gw`) also has all
 >   discovery, meshing and transport functionality available,
 >   but will additionally try to discover unknown paths on
@@ -1162,18 +1162,18 @@ the default mode.
 >   will try to discover this path via all other active interfaces,
 >   and forward the discovered path to the requestor if one is
 >   found.
->   <br/>
+>   
 >   If you want to allow other nodes to widely resolve paths or connect
 >   to a network via an interface, it might be useful to put it in this
 >   mode. By creating a chain of `gateway` interfaces, other
 >   nodes will be able to immediately discover paths to any
 >   destination along the chain.
->   <br/>
+>   
 >   *Please note!* It is the interface *facing the clients* that
 >   must be put into `gateway` mode for this to work, not
 >   the interface facing the wider network (for this, the `boundary`
 >   mode can be useful, though).
->   <br/>
+>   
 > * In the `access_point` (or shorthand `ap`) mode, the
 >   interface will operate as a network access point. In this
 >   mode, announces will not be automatically broadcasted on
@@ -1181,13 +1181,13 @@ the default mode.
 >   will have a much shorter expiry time. In addition, path
 >   requests from clients on the access point interface will
 >   be handled in the same way as the `gateway` interface.
->   <br/>
+>   
 >   This mode is useful for creating interfaces that remain
 >   quiet, until someone actually starts using them. An example
 >   of this could be a radio interface serving a wide area,
 >   where users are expected to connect momentarily, use the
 >   network, and then disappear again.
->   <br/>
+>   
 > * The `roaming` mode should be used on interfaces that are
 >   roaming (physically mobile), seen from the perspective of
 >   other nodes in the network. As an example, if a vehicle is
@@ -1202,7 +1202,7 @@ the default mode.
 >   side of the network will also be able to reach devices
 >   internal to the vehicle, when it is in range. Paths via
 >   `roaming` interfaces also expire faster.
->   <br/>
+>   
 > * The purpose of the `boundary` mode is to specify interfaces
 >   that establish connectivity with network segments that are
 >   significantly different than the one this node exists on.
@@ -1210,7 +1210,7 @@ the default mode.
 >   network, but also has a high-speed connection to a
 >   public Transport Node available on the Internet, the interface
 >   connecting over the Internet should be set to `boundary` mode.
->   <br/>
+>   
 
 For a table describing the impact of all modes on announce propagation,
 please see the [Announce Propagation Rules](understanding.md#understanding-announcepropagation) section.
@@ -1233,16 +1233,16 @@ re-broadcasted to other interfaces*.
 >   announces *received* on this interface will only be re-transmitted and
 >   propagated to other interfaces once every hour, no matter how often they
 >   are received.
->   <br/>
+>   
 > * The optional `announce_rate_grace` defines the number of times a destination
 >   can violate the announce rate before the target rate is enforced.
->   <br/>
+>   
 > * The optional `announce_rate_penalty` configures an extra amount of
 >   time that is added to the normal rate target. As an example, if a penalty
 >   of `7200` seconds is defined, once the rate target is enforced, the
 >   destination in question will only have its announces propagated every
 >   3 hours, until it lowers its actual announce rate to within the target.
->   <br/>
+>   
 
 You can also configure default announce rate parameters for all interfaces that
 do not have these parameters set explicitly by setting the `default_ar_target`
@@ -1309,41 +1309,41 @@ but all the parameters are exposed for configuration if needed.
 
 > * The `ingress_control` option tells Reticulum whether or not
 >   to enable ingress control on the interface. Defaults to `True`.
->   <br/>
+>   
 > * The `ic_new_time` option configures how long (in seconds) an
 >   interface is considered newly spawned. Defaults to `2*60*60` seconds. This
 >   option is useful on publicly accessible interfaces that spawn new
 >   sub-interfaces when a new client connects.
->   <br/>
+>   
 > * The `ic_burst_freq_new` option sets the maximum announce ingress
 >   frequency for newly spawned interfaces. Defaults to `3.5`
 >   announces per second.
->   <br/>
+>   
 > * The `ic_burst_freq` option sets the maximum announce ingress
 >   frequency for other interfaces. Defaults to `12` announces
 >   per second.
->   <br/>
+>   
 >   > *If an interface exceeds its burst frequency, incoming announces
 >   > for unknown destinations will be temporarily held in a queue, and
 >   > not processed until later.*
 > * The `ic_max_held_announces` option sets the maximum amount of
 >   unique announces that will be held in the queue. Any additional
 >   unique announces will be dropped. Defaults to `256` announces.
->   <br/>
+>   
 > * The `ic_burst_hold` option sets how much time (in seconds) must
 >   pass after the burst frequency drops below its threshold, for the
 >   announce burst to be considered cleared. Defaults to `60`
 >   seconds.
->   <br/>
+>   
 > * The `ic_burst_penalty` option sets how much time (in seconds) must
 >   pass after the burst is considered cleared, before held announces can
 >   start being released from the queue. Defaults to `5*60`
 >   seconds.
->   <br/>
+>   
 > * The `ic_held_release_interval` option sets how much time (in seconds)
 >   must pass between releasing each held announce from the queue. Defaults
 >   to `30` seconds.
->   <br/>
+>   
 
 All of the above settings can be configured both as instance-wide defaults
 under the `[reticulum]` section of the configuration file, or on a per-
@@ -1373,28 +1373,28 @@ but all the parameters are exposed for configuration if needed.
 
 > * The `ingress_control` option tells Reticulum whether or not
 >   to enable ingress control on the interface. Defaults to `True`.
->   <br/>
+>   
 > * The `ic_new_time` option configures how long (in seconds) an
 >   interface is considered newly spawned. Defaults to `2*60*60` seconds. This
 >   option is useful on publicly accessible interfaces that spawn new
 >   sub-interfaces when a new client connects.
->   <br/>
+>   
 > * The `ic_pr_burst_freq_new` option sets the maximum path request
 >   ingress frequency for newly spawned interfaces. Defaults to `3`
 >   path requests per second.
->   <br/>
+>   
 > * The `ic_pr_burst_freq` option sets the maximum path request
 >   ingress frequency for other interfaces. Defaults to `8` path requests
 >   per second.
->   <br/>
+>   
 >   > *If an interface exceeds its burst frequency, incoming path requests
 >   > from that system will not traverse the network further.*
 > * The `egress_control` option enables hard-limiting path request egress
 >   control per-interface. Defaults to `False`
->   <br/>
+>   
 > * The `ec_pr_freq` option sets the hard limit for outbound path requests
 >   per second on a given interface.
->   <br/>
+>   
 
 All of the above settings can be configured both as instance-wide defaults
 under the `[reticulum]` section of the configuration file, or on a per-

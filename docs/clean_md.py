@@ -11,6 +11,7 @@ LINE_START_PATTERNS = [
 ]
 
 LINE_ANY_PATTERNS = [
+    # r'<br/>',
     # r'<div[^>]*>',
     # r'</div>',
 ]
@@ -56,6 +57,8 @@ def clean_markdown_content(content, start_patterns, any_patterns, api_ref=False)
                 if line.startswith("### "): line = line.replace("### ", "### `")
                 if line.startswith("#### "): line = line.replace("#### ", "#### `")
                 line = f"{line}`"
+
+        line = line.replace("<br/>", "")
 
         result.append(line)
     

@@ -59,6 +59,8 @@ def clean_markdown_content(content, start_patterns, any_patterns, api_ref=False)
                 line = f"{line}`"
 
         line = line.replace("<br/>", "")
+        line = line.replace("\n* **", "\n\n* **")
+        line = line.replace("**\n  : ", "**\n    ")
 
         result.append(line)
     

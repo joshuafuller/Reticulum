@@ -453,9 +453,7 @@ indirectly, but must first be established through a <em>single</em> destination.
 <li><p>An Ed25519 signature of the above information, verifying authenticity</p></li>
 </ul>
 <p>With this information, any Reticulum node that receives it will be able to reconstruct an outgoing destination to securely communicate with that destination. You might have noticed that there is one piece of information lacking to reconstruct full knowledge of the announced destination, and that is the aspect names of the destination. These are intentionally left out to save bandwidth, since they will be implicit in almost all cases. The receiving application will already know them. If a destination name is not entirely implicit, information can be included in the application specific data part that will allow the receiver to infer the naming.</p>
-<p>It is important to note that announces will be forwarded throughout the network according to a
-certain pattern. This will be detailed in the section
-<a class="reference internal" href="#understanding-announce"><span class="std std-ref">The Announce Mechanism in Detail</span></a>.</p>
+<p>It is important to note that announces will be forwarded throughout the network according to a certain pattern. This will be detailed in the section <a class="reference internal" href="#understanding-announce"><span class="std std-ref">The Announce Mechanism in Detail</span></a>.</p>
 <p>In Reticulum, destinations are allowed to move around the network at will. This is very different from protocols such as IP, where an address is always expected to stay within the network segment it was assigned in. This limitation does not exist in Reticulum, and any destination is <em>completely portable</em> over the entire topography of the network, and <em>can even be moved to other Reticulum networks</em> than the one it was created in, and still become reachable. To update its reachability, a destination simply needs to send an announce on any networks it is part of. After a short while, it will be globally reachable in the network.</p>
 <p>Seeing how <em>single</em> destinations are always tied to a private/public key pair leads us to the next topic.</p>
 </section>
@@ -535,13 +533,8 @@ application specific data, it will replace the old announce.</div>
 <p>According to these rules, an announce will propagate throughout the network in a predictable way, and make the announced destination reachable in a short amount of time. Fast networks that have the capacity to process many announces can reach full convergence very quickly, even when constantly adding new destinations. Slower segments of such networks might take a bit longer to gain full knowledge about the wide and fast networks they are connected to, but can still do so over time, while prioritising full and quickly converging end-to-end connectivity for their local, slower segments.</p>
 <div class="admonition tip">
 <p class="admonition-title">Tip</p>
-<p>Even very slow networks, that simply don’t have the capacity to ever reach <em>full</em> convergence
-will generally still be able to reach <strong>any other destination on any connected segments</strong>, since
-interconnecting transport nodes will prioritize announces into the slower segments that are
-actually requested by nodes on these.</p>
-<p>This means that slow, low-capacity or low-resource segments <strong>don’t</strong> need to have full network
-knowledge, since paths can always be recursively resolved from other segments that do have
-knowledge about them.</p>
+<p>Even very slow networks, that simply don’t have the capacity to ever reach <em>full</em> convergence will generally still be able to reach <strong>any other destination on any connected segments</strong>, since interconnecting transport nodes will prioritize announces into the slower segments that are actually requested by nodes on these.</p>
+<p>This means that slow, low-capacity or low-resource segments <strong>don’t</strong> need to have full network knowledge, since paths can always be recursively resolved from other segments that do have knowledge about them.</p>
 </div>
 <p>In general, even extremely complex networks, that utilize the maximum 128 hops will converge to full end-to-end connectivity in about one minute, given there is enough bandwidth available to process the required amount of announces.</p>
 </section>
@@ -702,8 +695,7 @@ that is used to encrypt the channel. Information can now be exchanged reliably a
 </ul>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>It’s important to note that this methodology ensures that the source of the request does not need to
-reveal any identifying information about itself. <strong>The link initiator remains completely anonymous</strong>.</p>
+<p>It’s important to note that this methodology ensures that the source of the request does not need to reveal any identifying information about itself. <strong>The link initiator remains completely anonymous</strong>.</p>
 </div>
 <p>When using <em>links</em>, Reticulum will automatically verify all data sent over the link, and can also automate retransmissions if <em>Resources</em> are used.</p>
 </section>
@@ -824,10 +816,7 @@ operating system.</p>
 </ul>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>To avoid confusion, it is very important to note, that the reference interface device <strong>does not</strong>
-use the LoRaWAN standard, but uses a custom MAC layer on top of the plain LoRa modulation! As such, you will
-need a plain LoRa radio module connected to a controller with the correct firmware. Full details on how to
-get or make such a device is available on the <a class="reference external" href="https://github.com/markqvist/rnode_firmware">RNode Page</a>.</p>
+<p>To avoid confusion, it is very important to note, that the reference interface device <strong>does not</strong> use the LoRaWAN standard, but uses a custom MAC layer on top of the plain LoRa modulation! As such, you will need a plain LoRa radio module connected to a controller with the correct firmware. Full details on how to get or make such a device is available on the <a class="reference external" href="https://github.com/markqvist/rnode_firmware">RNode Page</a>.</p>
 </div>
 <p>With the current reference setup, it should be possible to get on a Reticulum network for around 100$ even if you have none of the hardware already, and need to purchase everything.</p>
 <p>This reference setup is of course just a recommendation for getting started easily, and you should tailor it to your own specific needs, or whatever hardware you have available.</p>

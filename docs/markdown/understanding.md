@@ -177,9 +177,7 @@ As an example, an announce in a simple messenger application might contain the f
 
 With this information, any Reticulum node that receives it will be able to reconstruct an outgoing destination to securely communicate with that destination. You might have noticed that there is one piece of information lacking to reconstruct full knowledge of the announced destination, and that is the aspect names of the destination. These are intentionally left out to save bandwidth, since they will be implicit in almost all cases. The receiving application will already know them. If a destination name is not entirely implicit, information can be included in the application specific data part that will allow the receiver to infer the naming.
 
-It is important to note that announces will be forwarded throughout the network according to a
-certain pattern. This will be detailed in the section
-[The Announce Mechanism in Detail](#understanding-announce).
+It is important to note that announces will be forwarded throughout the network according to a certain pattern. This will be detailed in the section [The Announce Mechanism in Detail](#understanding-announce).
 
 In Reticulum, destinations are allowed to move around the network at will. This is very different from protocols such as IP, where an address is always expected to stay within the network segment it was assigned in. This limitation does not exist in Reticulum, and any destination is *completely portable* over the entire topography of the network, and *can even be moved to other Reticulum networks* than the one it was created in, and still become reachable. To update its reachability, a destination simply needs to send an announce on any networks it is part of. After a short while, it will be globally reachable in the network.
 
@@ -373,8 +371,7 @@ The *link* in Reticulum terminology should not be viewed as a direct node-to-nod
   
 
 #### NOTE
-It’s important to note that this methodology ensures that the source of the request does not need to
-reveal any identifying information about itself. **The link initiator remains completely anonymous**.
+It’s important to note that this methodology ensures that the source of the request does not need to reveal any identifying information about itself. **The link initiator remains completely anonymous**.
 
 When using *links*, Reticulum will automatically verify all data sent over the link, and can also automate retransmissions if *Resources* are used.
 
@@ -486,10 +483,7 @@ The reference setup can be considered a relatively stable platform to develop on
     operating system.
 
 #### NOTE
-To avoid confusion, it is very important to note, that the reference interface device **does not**
-use the LoRaWAN standard, but uses a custom MAC layer on top of the plain LoRa modulation! As such, you will
-need a plain LoRa radio module connected to a controller with the correct firmware. Full details on how to
-get or make such a device is available on the [RNode Page](https://github.com/markqvist/rnode_firmware).
+To avoid confusion, it is very important to note, that the reference interface device **does not** use the LoRaWAN standard, but uses a custom MAC layer on top of the plain LoRa modulation! As such, you will need a plain LoRa radio module connected to a controller with the correct firmware. Full details on how to get or make such a device is available on the [RNode Page](https://github.com/markqvist/rnode_firmware).
 
 With the current reference setup, it should be possible to get on a Reticulum network for around 100$ even if you have none of the hardware already, and need to purchase everything.
 

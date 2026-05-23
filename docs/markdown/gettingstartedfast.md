@@ -345,11 +345,7 @@ pip install rns --break-system-packages
 ```
 
 #### NOTE
-The `--break-system-packages` directive is a somewhat misleading choice
-of words. Setting it will of course not break any system packages, but will simply
-allow installing `pip` packages user- and system-wide. While this *could* in rare
-cases lead to version conflicts, it does not generally pose any problems, especially
-not in the case of installing Reticulum.
+The `--break-system-packages` directive is a somewhat misleading choice of words. Setting it will of course not break any system packages, but will simply allow installing `pip` packages user- and system-wide. While this *could* in rare cases lead to version conflicts, it does not generally pose any problems, especially not in the case of installing Reticulum.
 
 ### MacOS
 
@@ -384,11 +380,7 @@ Adjust Python version and shell init script location according to your system.
 On OpenWRT systems with sufficient storage and memory, you can install Reticulum and related utilities using the opkg package manager and pip.
 
 #### NOTE
-At the time of releasing this manual, work is underway to create pre-built
-Reticulum packages for OpenWRT, with full configuration, service
-and `uci` integration. Please see the [feed-reticulum](https://github.com/gretel/feed-reticulum)
-and [reticulum-openwrt](https://github.com/gretel/reticulum-openwrt)
-repositories for more information.
+At the time of releasing this manual, work is underway to create pre-built Reticulum packages for OpenWRT, with full configuration, service and `uci` integration. Please see the [feed-reticulum](https://github.com/gretel/feed-reticulum) and [reticulum-openwrt](https://github.com/gretel/reticulum-openwrt) repositories for more information.
 
 To install Reticulum on OpenWRT, first log into a command line session, and then use the following instructions:
 

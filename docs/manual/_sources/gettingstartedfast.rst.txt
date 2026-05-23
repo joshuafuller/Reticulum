@@ -383,11 +383,7 @@ For a one-shot installation of Reticulum, without globally enabling the ``break-
     pip install rns --break-system-packages
 
 .. note::
-   The ``--break-system-packages`` directive is a somewhat misleading choice
-   of words. Setting it will of course not break any system packages, but will simply
-   allow installing ``pip`` packages user- and system-wide. While this *could* in rare
-   cases lead to version conflicts, it does not generally pose any problems, especially
-   not in the case of installing Reticulum.
+   The ``--break-system-packages`` directive is a somewhat misleading choice of words. Setting it will of course not break any system packages, but will simply allow installing ``pip`` packages user- and system-wide. While this *could* in rare cases lead to version conflicts, it does not generally pose any problems, especially not in the case of installing Reticulum.
 
 
 MacOS
@@ -424,12 +420,7 @@ OpenWRT
 On OpenWRT systems with sufficient storage and memory, you can install Reticulum and related utilities using the `opkg` package manager and `pip`.
 
 .. note::
-
-   At the time of releasing this manual, work is underway to create pre-built
-   Reticulum packages for OpenWRT, with full configuration, service
-   and ``uci`` integration. Please see the `feed-reticulum <https://github.com/gretel/feed-reticulum>`_
-   and `reticulum-openwrt <https://github.com/gretel/reticulum-openwrt>`_
-   repositories for more information.
+   At the time of releasing this manual, work is underway to create pre-built Reticulum packages for OpenWRT, with full configuration, service and ``uci`` integration. Please see the `feed-reticulum <https://github.com/gretel/feed-reticulum>`_ and `reticulum-openwrt <https://github.com/gretel/reticulum-openwrt>`_ repositories for more information.
 
 To install Reticulum on OpenWRT, first log into a command line session, and then use the following instructions:
 
@@ -445,7 +436,6 @@ To install Reticulum on OpenWRT, first log into a command line session, and then
    rnsd -vvv
 
 .. note::
-   
    The above instructions have been verified and tested on OpenWRT 21.02 only. It is likely that other versions may require slightly altered installation commands or package names. You will also need enough free space in your overlay FS, and enough free RAM to actually run Reticulum and any related programs and utilities.
 
 Depending on your device configuration, you may need to adjust firewall rules for Reticulum connectivity to and from your device to work. Until proper packaging is ready, you will also need to manually create a service or startup script to automatically laucnh Reticulum at boot time.

@@ -25,39 +25,47 @@ The ultimate aim of Reticulum is to allow anyone to be their own network operato
 To be as widely usable and efficient to deploy as possible, the following goals have been used to guide the design of Reticulum:
 
 * **Fully useable as open source software stack**
-  : Reticulum must be implemented with, and be able to run using only open source software. This is
+    Reticulum must be implemented with, and be able to run using only open source software. This is
     critical to ensuring the availability, security and transparency of the system.
+
 * **Hardware layer agnosticism**
-  : Reticulum must be fully hardware agnostic, and shall be useable over a wide range of
+    Reticulum must be fully hardware agnostic, and shall be useable over a wide range of
     physical networking layers, such as data radios, serial lines, modems, handheld transceivers,
     wired Ethernet, WiFi, or anything else that can carry a digital data stream. Hardware made for
     dedicated Reticulum use shall be as cheap as possible and use off-the-shelf components, so
     it can be easily modified and replicated by anyone interested in doing so.
+
 * **Very low bandwidth requirements**
-  : Reticulum should be able to function reliably over links with a transmission capacity as low
+    Reticulum should be able to function reliably over links with a transmission capacity as low
     as *5 bits per second*.
+
 * **Encryption by default**
-  : Reticulum must use strong encryption by default for all communication.
+    Reticulum must use strong encryption by default for all communication.
+
 * **Initiator Anonymity**
-  : It must be possible to communicate over a Reticulum network without revealing any identifying
+    It must be possible to communicate over a Reticulum network without revealing any identifying
     information about oneself.
+
 * **Unlicensed use**
-  : Reticulum shall be functional over physical communication mediums that do not require any
+    Reticulum shall be functional over physical communication mediums that do not require any
     form of license to use. Reticulum must be designed in a way, so it is usable over ISM radio
     frequency bands, and can provide functional long distance links in such conditions, for
     example by connecting a modem to a PMR or CB radio, or by using LoRa or WiFi modules.
+
 * **Supplied software**
-  : In addition to the core networking stack and API, that allows a developer to build
+    In addition to the core networking stack and API, that allows a developer to build
     applications with Reticulum, a basic set of Reticulum-based communication tools must be
     implemented and released along with Reticulum itself. These shall serve both as a
     functional, basic communication suite, and as an example and learning resource to others
     wishing to build applications with Reticulum.
+
 * **Ease of use**
-  : The reference implementation of Reticulum is written in Python, to make it easy to use and
+    The reference implementation of Reticulum is written in Python, to make it easy to use and
     understand. A programmer with only basic experience should be able to use Reticulum to write
     networked applications.
+
 * **Low cost**
-  : It shall be as cheap as possible to deploy a communication system based on Reticulum. This
+    It shall be as cheap as possible to deploy a communication system based on Reticulum. This
     should be achieved by using cheap off-the-shelf hardware that potential users might already
     own. The cost of setting up a functioning node should be less than $100 even if all parts
     needs to be purchased.
@@ -83,26 +91,29 @@ Reticulum can connect to a variety of interfaces such as radio modems, data radi
 To receive and send data with the Reticulum stack, an application needs to create one or more destinations. Reticulum uses three different basic destination types, and one special:
 
 * **Single**
-  : The *single* destination type is the most common type in Reticulum, and should be used for
+    The *single* destination type is the most common type in Reticulum, and should be used for
     most purposes. It is always identified by a unique public key. Any data sent to this
     destination will be encrypted using ephemeral keys derived from an ECDH key exchange, and will
     only be readable by the creator of the destination, who holds the corresponding private key.
+
 * **Plain**
-  : A *plain* destination type is unencrypted, and suited for traffic that should be broadcast to a
+    A *plain* destination type is unencrypted, and suited for traffic that should be broadcast to a
     number of users, or should be readable by anyone. Traffic to a *plain* destination is not encrypted.
     Generally, *plain* destinations can be used for broadcast information intended to be public.
     Plain destinations are only reachable directly, and packets addressed to plain destinations are
     never transported over multiple hops in the network. To be transportable over multiple hops in
     Reticulum, information *must* be encrypted, since Reticulum uses the per-packet encryption to verify
     routing paths and keep them alive.
+
 * **Group**
-  : The *group* special destination type, that defines a symmetrically encrypted virtual destination.
+    The *group* special destination type, that defines a symmetrically encrypted virtual destination.
     Data sent to this destination will be encrypted with a symmetric key, and will be readable by
     anyone in possession of the key, but as with the *plain* destination type, packets to this type
     of destination are not currently transported over multiple hops, although a planned upgrade
     to Reticulum will allow globally reachable *group* destinations.
+
 * **Link**
-  : A *link* is a special destination type, that serves as an abstract channel to a *single*
+    A *link* is a special destination type, that serves as an abstract channel to a *single*
     destination, directly connected or over multiple hops. The *link* also offers reliability and
     more efficient encryption, forward secrecy, initiator anonymity, and as such can be useful even
     when a node is directly reachable. It also offers a more capable API and allows easily carrying
@@ -139,12 +150,14 @@ Any destination on a Reticulum network can be addressed and reached simply by kn
 To recap, the different destination types should be used in the following situations:
 
 * **Single**
-  : When private communication between two endpoints is needed. Supports multiple hops.
+    When private communication between two endpoints is needed. Supports multiple hops.
+
 * **Group**
-  : When private communication between two or more endpoints is needed. Supports multiple hops
+    When private communication between two or more endpoints is needed. Supports multiple hops
     indirectly, but must first be established through a *single* destination.
+
 * **Plain**
-  : When plain-text communication is desirable, for example when broadcasting information, or for local discovery purposes.
+    When plain-text communication is desirable, for example when broadcasting information, or for local discovery purposes.
 
 To communicate with a *single* destination, you need to know its public key. Any method for obtaining the public key is valid, but Reticulum includes a simple mechanism for making other nodes aware of your destinations public key, called the *announce*. It is also possible to request an unknown public key from the network, as all transport instances serve as a distributed ledger of public keys.
 
@@ -406,8 +419,11 @@ While the current implementation focuses on interface discovery, the concept of 
 As the ecosystem evolves, Network Identities will facilitate:
 
 * **Distributed Name Resolution:** A system where networks can publish name-to-identity mappings, allowing human-readable names to resolve without centralized servers.
+
 * **Service Publishing:** Networks will be able to announce specific capabilities, services, or information endpoints available publicly or to their members.
+
 * **Inter-Network Federation:** Trust relationships between different networks, allowing for seamless but managed flow of traffic and information across distinct administrative boundaries.
+
 * **Distributed Blackhole Management:** A reputation-based system for blackhole list distribution, where trusted Network Identities can sign and publish lists of blackholed identities. This allows communities to collaboratively enforce security standards and filter spam or malicious identities across the parts of the wider mesh that they are responsible for.
 
 By adopting the use of Network Identities now, you are preparing your infrastructure to be compatible with this future functionality.
@@ -443,26 +459,30 @@ The communication channel must support at least half-duplex operation, and provi
 That being said, this reference setup has been outlined to provide a common platform for anyone who wants to help in the development of Reticulum, and for everyone who wants to know a recommended setup to get started experimenting. A reference system consists of three parts:
 
 * **An Interface Device**
-  : Which provides access to the physical medium whereupon the communication
+    Which provides access to the physical medium whereupon the communication
     takes place, for example a radio with an integrated modem. A setup with a separate modem
     connected to a radio would also be an interface device.
+
 * **A Host Device**
-  : Some sort of computing device that can run the necessary software, communicate with the
+    Some sort of computing device that can run the necessary software, communicate with the
     interface device, and provide user interaction.
+
 * **A Software Stack**
-  : The software implementing the Reticulum protocol and applications using it.
+    The software implementing the Reticulum protocol and applications using it.
 
 The reference setup can be considered a relatively stable platform to develop on, and also to start building networks or applications on. While details of the implementation might change at the current stage of development, it is the goal to maintain hardware compatibility for as long as entirely possible, and the current reference setup has been determined to provide a functional platform for many years into the future. The current Reference System Setup is as follows:
 
 * **Interface Device**
-  : A data radio consisting of a LoRa radio module, and a microcontroller with open source
+    A data radio consisting of a LoRa radio module, and a microcontroller with open source
     firmware, that can connect to host devices via USB. It operates in either the 430, 868 or 900
     MHz frequency bands. More details can be found on the [RNode Page](https://github.com/markqvist/rnode_firmware).
+
 * **Host Device**
-  : Any computer device running Linux and Python. A Raspberry Pi with a Debian based OS is
+    Any computer device running Linux and Python. A Raspberry Pi with a Debian based OS is
     a good place to start, but anything can be used.
+
 * **Software Stack**
-  : The most recently released Python Implementation of Reticulum, running on a Linux-based
+    The most recently released Python Implementation of Reticulum, running on a Linux-based
     operating system.
 
 #### NOTE
@@ -527,24 +547,20 @@ IFAC Flag
 open             0  Packet for publically accessible interface
 authenticated    1  Interface authentication is included in packet
 
-
 Header Types
 -----------------
 type 1           0  Two byte header, one 16 byte address field
 type 2           1  Two byte header, two 16 byte address fields
-
 
 Context Flag
 -----------------
 unset            0  The context flag is used for various types
 set              1  of signalling, depending on packet context
 
-
 Propagation Types
 -----------------
 broadcast        0
 transport        1
-
 
 Destination Types
 -----------------
@@ -553,14 +569,12 @@ group           01
 plain           10
 link            11
 
-
 Packet Types
 -----------------
 data            00
 announce        01
 link request    10
 proof           11
-
 
 +- Packet Example -+
 
@@ -576,7 +590,6 @@ proof           11
 |+------------- Header Type      = HEADER_2 (two byte header, two address fields)
 +-------------- Access Codes     = DISABLED
 
-
 +- Packet Example -+
 
    HEADER FIELD   DESTINATION FIELD   CONTEXT FIELD  DATA FIELD
@@ -591,7 +604,6 @@ proof           11
 |+------------- Header Type      = HEADER_1 (two byte header, one address field)
 +-------------- Access Codes     = DISABLED
 
-
 +- Packet Example -+
 
    HEADER FIELD     IFAC FIELD    DESTINATION FIELD   CONTEXT FIELD  DATA FIELD
@@ -605,7 +617,6 @@ proof           11
 || +----------- Propagation Type = BROADCAST
 |+------------- Header Type      = HEADER_1 (two byte header, one address field)
 +-------------- Access Codes     = ENABLED
-
 
 Size examples of different packet types
 ---------------------------------------

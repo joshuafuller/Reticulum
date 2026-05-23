@@ -61,7 +61,6 @@ def program_setup(configpath):
     # Let's hand over control to the announce loop
     announceLoop(destination)
 
-
 def announceLoop(destination):
     # Let the user know that everything is ready
     RNS.log(
@@ -78,7 +77,6 @@ def announceLoop(destination):
         entered = input()
         destination.announce()
         RNS.log("Sent announce from "+RNS.prettyhexrep(destination.hash))
-
 
 ##########################################################
 #### Program Startup #####################################
@@ -201,7 +199,6 @@ def program_setup(configpath):
     # Everything's ready!
     # Let's hand over control to the announce loop
     announceLoop(destination_1, destination_2)
-
 
 def announceLoop(destination_1, destination_2):
     # Let the user know that everything is ready
@@ -380,7 +377,6 @@ def broadcastLoop(destination):
             packet.send()
 
 
-
 ##########################################################
 #### Program Startup #####################################
 ##########################################################
@@ -454,7 +450,6 @@ import RNS
 # them all within the app namespace "example_utilities"
 APP_NAME = "example_utilities"
 
-
 ##########################################################
 #### Server Part #########################################
 ##########################################################
@@ -500,7 +495,6 @@ def server(configpath):
     # Let's Wait for client requests or user input
     announceLoop(echo_destination)
 
-
 def announceLoop(destination):
     # Let the user know that everything is ready
     RNS.log(
@@ -517,7 +511,6 @@ def announceLoop(destination):
         entered = input()
         destination.announce()
         RNS.log("Sent announce from "+RNS.prettyhexrep(destination.hash))
-
 
 def server_callback(message, packet):
     global reticulum
@@ -546,7 +539,6 @@ def server_callback(message, packet):
             reception_stats += " [SNR "+str(packet.snr)+" dB]"
 
     RNS.log("Received packet from echo client, proof sent"+reception_stats)
-
 
 ##########################################################
 #### Client Part #########################################
@@ -697,7 +689,6 @@ def packet_delivered(receipt):
 def packet_timed_out(receipt):
     if receipt.status == RNS.PacketReceipt.FAILED:
         RNS.log("Packet "+RNS.prettyhexrep(receipt.hash)+" timed out")
-
 
 ##########################################################
 #### Program Startup #####################################
@@ -877,7 +868,6 @@ def server_packet_received(message, packet):
     reply_data = reply_text.encode("utf-8")
     RNS.Packet(latest_client_link, reply_data).send()
 
-
 ##########################################################
 #### Client Part #########################################
 ##########################################################
@@ -1013,7 +1003,6 @@ def client_packet_received(message, packet):
     RNS.log("Received data on the link: "+text)
     print("> ", end=" ")
     sys.stdout.flush()
-
 
 ##########################################################
 #### Program Startup #####################################
@@ -1187,7 +1176,6 @@ def server_packet_received(message, packet):
     reply_data = reply_text.encode("utf-8")
     RNS.Packet(latest_client_link, reply_data).send()
 
-
 ##########################################################
 #### Client Part #########################################
 ##########################################################
@@ -1336,7 +1324,6 @@ def client_packet_received(message, packet):
     RNS.log("Received data on the link: "+text)
     print("> ", end=" ")
     sys.stdout.flush()
-
 
 ##########################################################
 #### Program Startup #####################################
@@ -1499,7 +1486,6 @@ def client_connected(link):
 def client_disconnected(link):
     RNS.log("Client disconnected")
 
-
 ##########################################################
 #### Client Part #########################################
 ##########################################################
@@ -1588,7 +1574,6 @@ def client_loop():
                     failed_callback = request_failed
                 )
 
-
         except Exception as e:
             RNS.log("Error while sending request over the link: "+str(e))
             should_quit = True
@@ -1605,7 +1590,6 @@ def request_received(request_receipt):
 
 def request_failed(request_receipt):
     RNS.log("The request "+RNS.prettyhexrep(request_receipt.request_id)+" failed.")
-
 
 # This function is called when a link
 # has been established with the server
@@ -1631,7 +1615,6 @@ def link_closed(link):
     
     time.sleep(1.5)
     sys.exit(0)
-
 
 ##########################################################
 #### Program Startup #####################################
@@ -1784,7 +1767,6 @@ class StringMessage(RNS.MessageBase):
     def unpack(self, raw):
         self.data, self.timestamp = umsgpack.unpackb(raw)
 
-
 ##########################################################
 #### Server Part #########################################
 ##########################################################
@@ -1887,7 +1869,6 @@ def server_message_received(message):
         # is considered handled and any subsequent
         # handlers are skipped.
         return True
-
 
 ##########################################################
 #### Client Part #########################################
@@ -2031,7 +2012,6 @@ def client_message_received(message):
         print("> ", end=" ")
         sys.stdout.flush()
 
-
 ##########################################################
 #### Program Startup #####################################
 ##########################################################
@@ -2117,7 +2097,6 @@ from RNS.vendor import umsgpack
 # them all within the app namespace "example_utilities"
 APP_NAME = "example_utilities"
 
-
 ##########################################################
 #### Server Part #########################################
 ##########################################################
@@ -2190,7 +2169,6 @@ def client_connected(link):
     if latest_buffer:
         latest_buffer.close()
 
-
     # Create buffer objects.
     #   The stream_id parameter to these functions is
     #   a bit like a file descriptor, except that it
@@ -2224,7 +2202,6 @@ def server_buffer_ready(ready_bytes: int):
     reply_message = reply_message.encode("utf-8")
     latest_buffer.write(reply_message)
     latest_buffer.flush()
-
 
 
 
@@ -2319,7 +2296,6 @@ def client_loop():
                 # Flush the buffer to force the data to be sent.
                 buffer.flush()
 
-
         except Exception as e:
             RNS.log("Error while sending data over the link buffer: "+str(e))
             should_quit = True
@@ -2362,7 +2338,6 @@ def client_buffer_ready(ready_bytes: int):
     RNS.log("Received data over the link buffer: " + data.decode("utf-8"))
     print("> ", end=" ")
     sys.stdout.flush()
-
 
 ##########################################################
 #### Program Startup #####################################
@@ -2639,7 +2614,6 @@ download_time     = 0
 transfer_size     = 0
 file_size         = 0
 
-
 # This initialisation is executed when the users chooses
 # to run as a client
 def client(destination_hexhash, configpath):
@@ -2659,7 +2633,6 @@ def client(destination_hexhash, configpath):
 
     # We must first initialise Reticulum
     reticulum = RNS.Reticulum(configpath)
-
 
     # Check if we know a path to the destination
     if not RNS.Transport.has_path(destination_hash):
@@ -2894,7 +2867,6 @@ def filelist_timeout_job():
     if len(server_files) == 0:
         RNS.log("Timed out waiting for filelist, exiting")
         sys.exit(0)
-
 
 # When a link is closed, we'll inform the
 # user, and exit the program
@@ -3225,7 +3197,6 @@ class ExampleInterface(Interface):
         thread.start()
         self.online = True
         RNS.log("Serial port "+self.port+" is now open", RNS.LOG_VERBOSE)
-
 
     # This method will be called from our read-loop
     # whenever a full packet has been received over

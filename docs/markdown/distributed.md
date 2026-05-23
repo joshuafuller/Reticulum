@@ -83,10 +83,15 @@ The `rngit` system is not a monolithic application prescribing a specific workfl
 The core primitives include:
 
 * **Repository Hosting**: Bare Git repositories served over Reticulum links, accessible via standard Git commands through the `rns://` URL scheme.
+
 * **Identity-Based Access Control**: Fine-grained permissions managed through cryptographically verifiable identity hashes, configurable at the group, repository, or document level.
+
 * **Release Distribution**: Cryptographically signed release artifacts with embedded provenance information, verifiable offline and distributable through any Reticulum or physical path.
+
 * **Work Document Tracking**: Structured, threaded work management attached to repositories, with precise permission controls, and the ability to contain updates or discussions.
+
 * **Forking and Mirroring**: Automated replication of repositories from any accessible Git URL, with metadata tracking upstream relationships for synchronization.
+
 * **Nomad Network Integration**: Page node functionality for browsing repository contents, commit history, and release information through the Nomad Network protocol.
 
 These primitives can be composed into workflows ranging from single-developer projects to complex multi-organizational collaborations. A solo developer might use only repository hosting and release distribution. A research group might add work document tracking for structured peer review. A software distribution network might combine mirroring with cryptographic release verification to create resilient update channels.

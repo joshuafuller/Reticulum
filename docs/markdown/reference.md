@@ -198,6 +198,7 @@ search for an identity from a known *identity hash*, by setting the
 * **Parameters:**
   * **target_hash** – Destination or identity hash as *bytes*.
   * **from_identity_hash** – Whether to search based on identity hash instead of destination hash as *bool*.
+
 * **Returns:**
   An [RNS.Identity](#api-identity) instance that can be used to create an outgoing [RNS.Destination](#api-destination), or *None* if the destination is unknown.
 
@@ -207,6 +208,7 @@ Recall last heard app_data for a destination hash.
 
 * **Parameters:**
   **destination_hash** – Destination hash as *bytes*.
+
 * **Returns:**
   *Bytes* containing app_data, or *None* if the destination is unknown.
 
@@ -216,6 +218,7 @@ Get a SHA-256 hash of passed data.
 
 * **Parameters:**
   **data** – Data to be hashed as *bytes*.
+
 * **Returns:**
   SHA-256 hash as *bytes*.
 
@@ -225,6 +228,7 @@ Get a truncated SHA-256 hash of passed data.
 
 * **Parameters:**
   **data** – Data to be hashed as *bytes*.
+
 * **Returns:**
   Truncated SHA-256 hash as *bytes*.
 
@@ -234,6 +238,7 @@ Get a random SHA-256 hash.
 
 * **Parameters:**
   **data** – Data to be hashed as *bytes*.
+
 * **Returns:**
   Truncated SHA-256 hash of random data as *bytes*.
 
@@ -243,6 +248,7 @@ Get the ID of the currently used ratchet key for a given destination hash
 
 * **Parameters:**
   **destination_hash** – A destination hash as *bytes*.
+
 * **Returns:**
   A ratchet ID as *bytes* or *None*.
 
@@ -253,6 +259,7 @@ Can be used to load previously created and saved identities into Reticulum.
 
 * **Parameters:**
   **prv_bytes** – The *bytes* of private a saved private key. **HAZARD!** Never use this to generate a new key by feeding random data in prv_bytes.
+
 * **Returns:**
   A [RNS.Identity](#api-identity) instance, or *None* if the *bytes* data was invalid.
 
@@ -263,6 +270,7 @@ Can be used to load previously created and saved identities into Reticulum.
 
 * **Parameters:**
   **path** – The full path to the saved [RNS.Identity](#api-identity) data
+
 * **Returns:**
   A [RNS.Identity](#api-identity) instance, or *None* if the loaded data was invalid.
 
@@ -274,6 +282,7 @@ communication for the identity. Be very careful with this method.
 
 * **Parameters:**
   **path** – The full path specifying where to save the identity.
+
 * **Returns:**
   True if the file was saved, otherwise False.
 
@@ -283,6 +292,7 @@ Saves the public identity to a file.
 
 * **Parameters:**
   **path** – The full path specifying where to save the identity.
+
 * **Returns:**
   True if the file was saved, otherwise False.
 
@@ -302,6 +312,7 @@ Load a private key into the instance.
 
 * **Parameters:**
   **prv_bytes** – The private key as *bytes*.
+
 * **Returns:**
   True if the key was loaded, otherwise False.
 
@@ -311,6 +322,7 @@ Load a public key into the instance.
 
 * **Parameters:**
   **pub_bytes** – The public key as *bytes*.
+
 * **Returns:**
   True if the key was loaded, otherwise False.
 
@@ -320,8 +332,10 @@ Encrypts information for the identity.
 
 * **Parameters:**
   **plaintext** – The plaintext to be encrypted as *bytes*.
+
 * **Returns:**
   Ciphertext token as *bytes*.
+
 * **Raises:**
   *KeyError* if the instance does not hold a public key.
 
@@ -331,8 +345,10 @@ Decrypts information for the identity.
 
 * **Parameters:**
   **ciphertext** – The ciphertext to be decrypted as *bytes*.
+
 * **Returns:**
   Plaintext as *bytes*, or *None* if decryption fails.
+
 * **Raises:**
   *KeyError* if the instance does not hold a private key.
 
@@ -342,8 +358,10 @@ Signs information by the identity.
 
 * **Parameters:**
   **message** – The message to be signed as *bytes*.
+
 * **Returns:**
   Signature as *bytes*.
+
 * **Raises:**
   *KeyError* if the instance does not hold a private key.
 
@@ -354,8 +372,10 @@ Validates the signature of a signed message.
 * **Parameters:**
   * **signature** – The signature to be validated as *bytes*.
   * **message** – The message to be validated as *bytes*.
+
 * **Returns:**
   True if the signature is valid, otherwise False.
+
 * **Raises:**
   *KeyError* if the instance does not hold a public key.
 
@@ -418,6 +438,7 @@ Set or query whether the destination accepts incoming link requests.
 
 * **Parameters:**
   **accepts** – If `True` or `False`, this method sets whether the destination accepts incoming link requests. If not provided or `None`, the method returns whether the destination currently accepts link requests.
+
 * **Returns:**
   `True` or `False` depending on whether the destination accepts incoming link requests, if the *accepts* parameter is not provided or `None`.
 
@@ -463,6 +484,7 @@ Registers a request handler.
   * **allow** – One of `RNS.Destination.ALLOW_NONE`, `RNS.Destination.ALLOW_ALL` or `RNS.Destination.ALLOW_LIST`. If `RNS.Destination.ALLOW_LIST` is set, the request handler will only respond to requests for identified peers in the supplied list.
   * **allowed_list** – A list of *bytes-like* [RNS.Identity](#api-identity) hashes.
   * **auto_compress** – If `True` or `False`, determines whether automatic compression of responses should be carried out. If set to an integer value, responses will only be auto-compressed if under this size in bytes. If omitted, the default compression settings will be followed.
+
 * **Raises:**
   `ValueError` if any of the supplied arguments are invalid.
 
@@ -472,6 +494,7 @@ Deregisters a request handler.
 
 * **Parameters:**
   **path** – The path for the request handler to be deregistered.
+
 * **Returns:**
   True if the handler was deregistered, otherwise False.
 
@@ -489,6 +512,7 @@ Enabling ratchets will have a small impact on announce size, adding 32 bytes to 
 
 * **Parameters:**
   **ratchets_path** – The path to a file to store ratchet data in.
+
 * **Returns:**
   True if the operation succeeded, otherwise False.
 
@@ -505,6 +529,7 @@ and try to use when decrypting incoming packets. Defaults to `Destination.RATCHE
 
 * **Parameters:**
   **retained_ratchets** – The number of generated ratchets to retain.
+
 * **Returns:**
   True if the operation succeeded, False if not.
 
@@ -515,6 +540,7 @@ Defaults to `Destination.RATCHET_INTERVAL`.
 
 * **Parameters:**
   **interval** – The minimum interval in seconds.
+
 * **Returns:**
   True if the operation succeeded, False if not.
 
@@ -538,6 +564,7 @@ For a `RNS.Destination.GROUP` type destination, loads a symmetric private key.
 
 * **Parameters:**
   **key** – A *bytes-like* containing the symmetric key.
+
 * **Raises:**
   `TypeError` if called on an incompatible type of destination.
 
@@ -547,6 +574,7 @@ Encrypts information for `RNS.Destination.SINGLE` or `RNS.Destination.GROUP` typ
 
 * **Parameters:**
   **plaintext** – A *bytes-like* containing the plaintext to be encrypted.
+
 * **Raises:**
   `ValueError` if destination does not hold a necessary key for encryption.
 
@@ -556,6 +584,7 @@ Decrypts information for `RNS.Destination.SINGLE` or `RNS.Destination.GROUP` typ
 
 * **Parameters:**
   **ciphertext** – *Bytes* containing the ciphertext to be decrypted.
+
 * **Raises:**
   `ValueError` if destination does not hold a necessary key for decryption.
 
@@ -565,6 +594,7 @@ Signs information for `RNS.Destination.SINGLE` type destination.
 
 * **Parameters:**
   **message** – *Bytes* containing the message to be signed.
+
 * **Returns:**
   A *bytes-like* containing the message signature, or *None* if the destination could not sign the message.
 
@@ -737,6 +767,7 @@ Sends a request to the remote peer.
   * **failed_callback** – An optional function or method with the signature *failed_callback(request_receipt)* to be called when a request fails. See the [Request Example](examples.md#example-request) for more info.
   * **progress_callback** – An optional function or method with the signature *progress_callback(request_receipt)* to be called when progress is made receiving the response. Progress can be accessed as a float between 0.0 and 1.0 by the *request_receipt.progress* property.
   * **timeout** – An optional timeout in seconds for the request. If *None* is supplied it will be calculated based on link RTT.
+
 * **Returns:**
   A [RNS.RequestReceipt](#api-requestreceipt) instance if the request was sent, or *False* if it was not.
 
@@ -888,6 +919,7 @@ Sets the resource strategy for the link.
 
 * **Parameters:**
   **resource_strategy** – One of `RNS.Link.ACCEPT_NONE`, `RNS.Link.ACCEPT_ALL` or `RNS.Link.ACCEPT_APP`. If `RNS.Link.ACCEPT_APP` is set, the resource_callback will be called to determine whether the resource should be accepted or not.
+
 * **Raises:**
   *TypeError* if the resource strategy is unsupported.
 
@@ -1121,6 +1153,7 @@ of this object, see the Python documentation for
   * **stream_id** – the local stream id to receive from
   * **channel** – the channel to receive on
   * **ready_callback** – function to call when new data is available
+
 * **Returns:**
   a BufferedReader object
 
@@ -1136,6 +1169,7 @@ of this object, see the Python documentation for
 * **Parameters:**
   * **stream_id** – the remote stream id to send to
   * **channel** – the channel to send on
+
 * **Returns:**
   a BufferedWriter object
 
@@ -1156,6 +1190,7 @@ of this object, see the Python documentation for
   * **send_stream_id** – the remote stream id to send to
   * **channel** – the channel to send and receive on
   * **ready_callback** – function to call when new data is available
+
 * **Returns:**
   a BufferedRWPair object
 
@@ -1251,6 +1286,7 @@ Deregisters an announce handler.
 
 * **Parameters:**
   **destination_hash** – A destination hash as *bytes*.
+
 * **Returns:**
   *True* if a path to the destination is known, otherwise *False*.
 
@@ -1258,6 +1294,7 @@ Deregisters an announce handler.
 
 * **Parameters:**
   **destination_hash** – A destination hash as *bytes*.
+
 * **Returns:**
   The number of hops to the specified destination, or `RNS.Transport.PATHFINDER_M` if the number of hops is unknown.
 
@@ -1265,6 +1302,7 @@ Deregisters an announce handler.
 
 * **Parameters:**
   **destination_hash** – A destination hash as *bytes*.
+
 * **Returns:**
   The destination hash as *bytes* for the next hop to the specified destination, or *None* if the next hop is unknown.
 
@@ -1272,6 +1310,7 @@ Deregisters an announce handler.
 
 * **Parameters:**
   **destination_hash** – A destination hash as *bytes*.
+
 * **Returns:**
   The interface for the next hop to the specified destination, or *None* if the interface is unknown.
 
@@ -1284,6 +1323,7 @@ blocks until the path is available, or the timeout is reached.
   * **destination_hash** – A destination hash as *bytes*.
   * **timeout** – An optional timeout in seconds.
   * **on_interface** – If specified, the path request will only be sent on this interface. In normal use, Reticulum handles this automatically, and this parameter should not be used.
+
 * **Returns:**
   *True* if a path to the destination is found, otherwise *False*.
 
@@ -1305,6 +1345,7 @@ Blackholes an identity.
   * **identity_hash** – The identity hash to blackhole as *bytes*.
   * **until** – Optional unix timestamp of when the blackhole expires as *float* or *int*.
   * **reason** – Optional reason for the blackhole as *str*.
+
 * **Returns:**
   *True* if successful, otherwise *False*.
 
@@ -1314,5 +1355,6 @@ Lifts blackhole for an identity.
 
 * **Parameters:**
   **identity_hash** – The identity hash to blackhole as *bytes*.
+
 * **Returns:**
   *True* if successful, otherwise *False*.

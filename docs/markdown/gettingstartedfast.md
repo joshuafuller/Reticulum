@@ -161,7 +161,9 @@ We strongly encourage everyone, even home users, to think in terms of building *
 There is no requirement to commit to a single strategy. The most robust setups often mix static, dynamic, and discovered interfaces.
 
 * **Static Interfaces:** You maintain a permanent interface to a trusted friend or organization using a static configuration.
+
 * **Bootstrap Links:** You connect a `bootstrap_only` interface to a public gateway on the Internet to scan for new connectable peers or to regain connectivity if your other interfaces fail.
+
 * **Local Wide-Area Connectivity:** You run a `RNodeInterface` on a shared frequency, giving you completely self-sovereign and private wide-area access to both your own network and other Reticulum peers globally, without any “service providers” being able to control or monitor how you interact with people.
 
 By combining these methods, you create a system that is secure against single points of failure, adaptable to changing network conditions, and better integrated into your physical and social reality.

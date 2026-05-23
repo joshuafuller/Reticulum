@@ -58,7 +58,6 @@ configuration file is created. The default configuration looks like this:
 # configuration example, you can run the command:
 # rnsd --exampleconfig
 
-
 [reticulum]
 
 # If you enable Transport, your system will route traffic
@@ -70,7 +69,6 @@ configuration file is created. The default configuration looks like this:
 
 enable_transport = No
 
-
 # By default, the first program to launch the Reticulum
 # Network Stack will create a shared instance, that other
 # programs can communicate with. Only the shared instance
@@ -81,7 +79,6 @@ enable_transport = No
 # is optional and can be removed for brevity.
 
 share_instance = Yes
-
 
 # If you want to run multiple *different* shared instances
 # on the same system, you will need to specify different
@@ -97,13 +94,11 @@ instance_name = default
 # shared_instance_port = 37428
 # instance_control_port = 37429
 
-
 # If you want to explicitly use TCP for shared instance
 # communication, instead of domain sockets, this is also
 # possible, by using the following option:
 
 # shared_instance_type = tcp
-
 
 # On systems where running instances may not have access
 # to the same shared Reticulum configuration directory,
@@ -114,7 +109,6 @@ instance_name = default
 # The key must be specified as bytes in hexadecimal.
 
 # rpc_key = e5c032d3ec4e64a6aca9927ba8ab73336780f6d71790
-
 
 # It is possible to allow remote management of Reticulum
 # systems using the various built-in utilities, such as
@@ -127,7 +121,6 @@ instance_name = default
 # enable_remote_management = yes
 # remote_management_allowed = 9fb6d773498fb3feda407ed8ef2c3229, 2d882c5586e548d79b5af27bca1776dc
 
-
 # You can configure Reticulum to panic and forcibly close
 # if an unrecoverable interface error occurs, such as the
 # hardware device for an interface disappearing. This is
@@ -135,7 +128,6 @@ instance_name = default
 # This behaviour is disabled by default.
 
 # panic_on_interface_error = No
-
 
 # When Transport is enabled, it is possible to allow the
 # Transport Instance to respond to probe requests from
@@ -146,7 +138,6 @@ instance_name = default
 # Optional, and disabled by default.
 
 # respond_to_probes = No
-
 
 [logging]
 # Valid log levels are 0 through 7:
@@ -160,7 +151,6 @@ instance_name = default
 #   7: Extreme logging
 
 loglevel = 4
-
 
 # The interfaces section defines the physical and virtual
 # interfaces Reticulum will use to communicate on. This
@@ -1227,6 +1217,7 @@ This provides users and operators with control over what they want to allow *on 
 This functionality serves a dual purpose:
 
 * **For Individual Users:** It offers a simple way to maintain a quiet and efficient local network by manually blocking spammy or unwanted peers.
+
 * **For Network Operators:** It enables the creation of federated, community-wide security standards. By publishing and sharing blackhole lists, operators can protect large infrastructures and distribute spam filtering rules across the mesh without manual intervention.
 
 ### Local Blackhole Management

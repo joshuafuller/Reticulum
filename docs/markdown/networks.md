@@ -142,16 +142,19 @@ This has profound implications for network design:
 * **No address allocation planning:** You never need to reserve address ranges,
   plan subnets, or coordinate with other network operators. Nodes simply generate
   destinations and announce them.
+
 * **Global portability:** A destination is not tied to a physical location or
   network segment. A node can move its destinations across interfaces, mediums,
   or even between entirely separate Reticulum networks simply by sending an
   announce on the new medium.
+
 * **Implicit authentication:** Because destinations are bound to public keys,
   communication to a destination is inherently cryptographically authenticated.
   Only the holder of the corresponding private key can decrypt and respond to
   traffic addressed to that destination. This also makes application-level
   authentication *much* simpler, since it can directly use the foundational
   identity verification built into the core networking layer.
+
 * **Identity abstraction:** A single Reticulum Identity can create multiple
   destinations. This allows a single entity (a person, a device, a service) to
   present multiple endpoints without needing multiple cryptographic keypairs.
@@ -191,9 +194,11 @@ The distinction is important. **Not** every node should be a Transport Node:
 * **Resource consumption:** Transport nodes maintain path tables, process
   announces, and forward traffic. This requires memory and CPU resources that
   may be limited on low-powered devices.
+
 * **Stability requirements:** Transport nodes contribute to network convergence.
   If Transport Nodes frequently go offline, path tables become stale and
   convergence suffers. Stable, always-on nodes make better Transport Nodes.
+
 * **Bandwidth considerations:** Transport nodes process and rebroadcast network
   maintenance traffic. On very low-bandwidth mediums, having too many Transport
   Nodes will consume capacity that should be used for actual data.
@@ -228,15 +233,19 @@ of communication is secured cryptographically:
 
 * **Traffic encryption:** All traffic to single destinations is encrypted using
   ephemeral keys.
+
 * **Source anonymity:** Reticulum packets do not include source addresses.
   An observer intercepting a packet cannot determine who sent it, only who it is
   addressed to (unless IFAC is enabled, in which case nothing can be determined).
   This provides initiator anonymity by default.
+
 * **Path verification:** The announce mechanism includes cryptographic signatures that
   prove the authenticity of destination announcements.
+
 * **Unforgeable delivery confirmations:** When a destination proves receipt of a
   packet, the proof is signed with the destination’s identity key. This prevents
   false acknowledgments and ensures reliable delivery verification.
+
 * **Interface authentication:** When using Interface Access Codes (IFAC), packets
   on authenticated interfaces carry signatures derived from a shared secret. Only
   nodes with the correct network name and passphrase can generate valid packets, allowing creation
@@ -248,10 +257,12 @@ The trustless design has important consequences for network design:
   join without pre-approval. Because traffic is encrypted and authenticated end-
   to-end, participants cannot interfere with each other’s private communication,
   even if they share the same transport infrastructure.
+
 * **No traffic inspection or prioritization:** Because traffic contents and
   sources are opaque to intermediate nodes, there is no mechanism for filtering,
   prioritizing, or throttling traffic based on its type or origin. All traffic
   is treated equally. From a neutrality perspective, this is a feature.
+
 * **Adversarial resilience:** The network can operate even if some nodes are
   malicious or controlled by adversaries. While a malicious Transport Node could
   refuse to forward certain traffic or drop packets, it cannot decrypt, modify,
@@ -280,12 +291,15 @@ to seamlessly mix mediums with vastly different characteristics:
   interconnect with gigabit Ethernet backbones. Reticulum automatically manages
   the flow of information, prioritizing local traffic on slow segments while
   allowing global convergence.
+
 * **Latency:** Satellite links with multi-second latency can coexist with local
   links measured in milliseconds. The transport system handles timing, asynchronous
   delivery and retransmissions transparently.
+
 * **Topology:** Point-to-point microwave links, broadcast radio networks,
   switched Ethernet fabrics, and virtual tunnels over the Internet can all be
   part of the same Reticulum network.
+
 * **Reliability:** Intermittent connections that come and go (such as mobile
   devices or opportunistic radio contacts) can participate alongside always-on
   infrastructure. Reticulum gracefully handles link loss and reconnection.
@@ -295,12 +309,15 @@ This heterogeneity is achieved through several design elements:
 * **Expandable, medium-agnostic interface system:** Reticulum communicates with the physical
   world through interface modules. Adding support for a new medium is a matter
   of implementing an interface class. The protocol itself remains unchanged.
+
 * **Interface modes:** Different modes (`full`, `gateway`, `access_point`,
   `roaming`, `boundary`) allow you to configure how interfaces interact with
   the wider network based on their characteristics and role.
+
 * **Announce propagation rules:** Announces are forwarded between interfaces
   according to rules that account for bandwidth limitations and interface modes.
   Slow segments are not overwhelmed by traffic from fast segments.
+
 * **Local traffic prioritization:** When bandwidth is constrained, Reticulum
   prioritizes announces for nearby destinations. This ensures that local
   connectivity remains functional even when global convergence is incomplete.

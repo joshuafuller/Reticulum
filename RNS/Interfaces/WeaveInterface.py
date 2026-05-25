@@ -775,8 +775,8 @@ class WeaveDevice():
             self.cpu_load = frame.data[0]
             self.capture_stats_cpu()
         elif frame.event == Evt.ET_STAT_MEMORY:
-            self.memory_free     = int.from_bytes(frame.data[:4])
-            self.memory_total    = int.from_bytes(frame.data[4:])
+            self.memory_free     = int.from_bytes(frame.data[:4], "big")
+            self.memory_total    = int.from_bytes(frame.data[4:], "big")
             self.memory_used     = self.memory_total-self.memory_free
             self.memory_used_pct = round((self.memory_used/self.memory_total)*100, 2)
             self.capture_stats_memory()

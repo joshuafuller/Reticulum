@@ -212,6 +212,7 @@ class Transport:
     @staticmethod
     def start(reticulum_instance):
         Transport.owner = reticulum_instance
+        Transport.PR_LOGLEVEL = RNS.LOG_EXTREME
 
         if Transport.identity == None:
             transport_identity_path = RNS.Reticulum.storagepath+"/transport_identity"
@@ -289,6 +290,7 @@ class Transport:
         if RNS.Reticulum.transport_enabled():
             path_table_path = RNS.Reticulum.storagepath+"/destination_table"
             tunnel_table_path = RNS.Reticulum.storagepath+"/tunnels"
+            Transport.PR_LOGLEVEL = RNS.LOG_DEBUG
 
             if os.path.isfile(path_table_path) and not Transport.owner.is_connected_to_shared_instance:
                 serialised_destinations = []
@@ -805,7 +807,7 @@ class Transport:
                             if time.time() > entry["timeout"]:
                                 stale_discovery_path_requests.append(destination_hash)
                                 should_collect = True
-                                RNS.log("Waiting path request for "+RNS.prettyhexrep(destination_hash)+" timed out and was removed", RNS.LOG_DEBUG) if RNS.sl(RNS.LOG_DEBUG) else None
+                                RNS.log("Waiting path request for "+RNS.prettyhexrep(destination_hash)+" timed out and was removed", RNS.LOG_EXTREME) if RNS.sl(RNS.LOG_EXTREME) else None
 
                     # Cull the tunnel table
                     stale_tunnels = []; ti = 0
@@ -1984,7 +1986,7 @@ class Transport:
 
                                     interface_str = " on "+str(attached_interface)
 
-                                    RNS.log("Got matching announce, answering waiting discovery path request for "+RNS.prettyhexrep(packet.destination_hash)+interface_str, RNS.LOG_DEBUG) if RNS.sl(RNS.LOG_DEBUG) else None
+                                    RNS.log("Got matching announce, answering waiting discovery path request for "+RNS.prettyhexrep(packet.destination_hash)+interface_str, Transport.PR_LOGLEVEL) if RNS.sl(Transport.PR_LOGLEVEL) else None
                                     announce_identity = RNS.Identity.recall(packet.destination_hash, _no_use=False)
                                     announce_destination = RNS.Destination(announce_identity, RNS.Destination.OUT, RNS.Destination.SINGLE, "unknown", "unknown");
                                     announce_destination.hash = packet.destination_hash
@@ -2902,7 +2904,7 @@ class Transport:
                                                    tag=tag_bytes)
 
                         else: RNS.log("Ignoring duplicate path request for "+RNS.prettyhexrep(destination_hash)+" with tag "+RNS.prettyhexrep(unique_tag), RNS.LOG_EXTREME) if RNS.sl(RNS.LOG_EXTREME) else None
-                else: RNS.log("Ignoring tagless path request for "+RNS.prettyhexrep(destination_hash), RNS.LOG_DEBUG) if RNS.sl(RNS.LOG_DEBUG) else None
+                else: RNS.log("Ignoring tagless path request for "+RNS.prettyhexrep(destination_hash), Transport.PR_LOGLEVEL) if RNS.sl(Transport.PR_LOGLEVEL) else None
         except Exception as e: RNS.log(f"Error while handling path request. The contained exception was: {e}", RNS.LOG_ERROR)
 
     @staticmethod
@@ -2917,7 +2919,7 @@ class Transport:
 
         if RNS.sl(RNS.LOG_DEBUG):
             interface_str = f" on {attached_interface}"
-            RNS.log(f"Path request for {RNS.prettyhexrep(destination_hash)}{interface_str}", RNS.LOG_DEBUG)
+            RNS.log(f"Path request for {RNS.prettyhexrep(destination_hash)}{interface_str}", Transport.PR_LOGLEVEL)
 
         destination_exists_on_local_client = False
         if len(Transport.local_client_interfaces) > 0:
@@ -2962,7 +2964,7 @@ class Transport:
                     # convergence time. Maybe just drop it?
                     RNS.log("Not answering path request for "+RNS.prettyhexrep(destination_hash)+interface_str+", since next hop is the requestor", RNS.LOG_DEBUG) if RNS.sl(RNS.LOG_DEBUG) else None
                 else:
-                    RNS.log("Answering path request for "+RNS.prettyhexrep(destination_hash)+interface_str+", path is known", RNS.LOG_DEBUG) if RNS.sl(RNS.LOG_DEBUG) else None
+                    RNS.log("Answering path request for "+RNS.prettyhexrep(destination_hash)+interface_str+", path is known", Transport.PR_LOGLEVEL) if RNS.sl(Transport.PR_LOGLEVEL) else None
 
                     now = time.time()
                     retries = Transport.PATHFINDER_R
@@ -3004,7 +3006,7 @@ class Transport:
         elif is_from_local_client:
             # Forward path request on all interfaces
             # except the local client
-            RNS.log("Forwarding path request from local client for "+RNS.prettyhexrep(destination_hash)+interface_str+" to all other interfaces", RNS.LOG_DEBUG) if RNS.sl(RNS.LOG_DEBUG) else None
+            RNS.log("Forwarding path request from local client for "+RNS.prettyhexrep(destination_hash)+interface_str+" to all other interfaces", Transport.PR_LOGLEVEL) if RNS.sl(Transport.PR_LOGLEVEL) else None
             request_tag = RNS.Identity.get_random_hash()
             for interface in Transport.interfaces:
                 if not interface == attached_interface:
@@ -3041,12 +3043,12 @@ class Transport:
         elif not is_from_local_client and len(Transport.local_client_interfaces) > 0:
             # Forward the path request on all local
             # client interfaces
-            RNS.log("Forwarding path request for "+RNS.prettyhexrep(destination_hash)+interface_str+" to local clients", RNS.LOG_DEBUG) if RNS.sl(RNS.LOG_DEBUG) else None
+            RNS.log("Forwarding path request for "+RNS.prettyhexrep(destination_hash)+interface_str+" to local clients", Transport.PR_LOGLEVEL) if RNS.sl(Transport.PR_LOGLEVEL) else None
             for interface in Transport.local_client_interfaces:
                 Transport.request_path(destination_hash, on_interface=interface)
 
         else:
-            RNS.log("Ignoring path request for "+RNS.prettyhexrep(destination_hash)+interface_str+", no path known", RNS.LOG_DEBUG) if RNS.sl(RNS.LOG_DEBUG) else None
+            RNS.log("Ignoring path request for "+RNS.prettyhexrep(destination_hash)+interface_str+", no path known", Transport.PR_LOGLEVEL) if RNS.sl(Transport.PR_LOGLEVEL) else None
 
     @staticmethod
     def from_local_client(packet):

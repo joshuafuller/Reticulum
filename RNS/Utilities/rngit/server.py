@@ -787,7 +787,7 @@ class ReticulumGitClient():
                     created_ts = rel.get("created", 0)
                     created = time.strftime("%Y-%m-%d %H:%M", time.localtime(created_ts)) if created_ts else "unknown"
                     artifacts = str(rel.get("artifacts", 0))
-                    preview = rel.get("preview", "")[:34]
+                    preview = rel.get("preview", "").splitlines()[0][:34]
                     print(f"{tag:<10} {status:<10} {created:<17} {artifacts:<5} {preview}")
 
                 if latest_release: print(f"\nThe latest release is: {latest_release}")
@@ -2665,7 +2665,7 @@ class ReticulumGitNode():
     ##################
 
     def log_request(self, msg, remote_identity):
-        if remote_identity.hash in self.blocked_identities: RNS.log(f"Blocked: {msg}", RNS.LOG_DEBUG)
+        if remote_identity and remote_identity.hash in self.blocked_identities: RNS.log(f"Blocked: {msg}", RNS.LOG_DEBUG)
         else: RNS.log(msg, RNS.LOG_VERBOSE)
 
     @staticmethod

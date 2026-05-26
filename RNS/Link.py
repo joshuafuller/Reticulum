@@ -1018,12 +1018,15 @@ class Link:
                                 identity.load_public_key(public_key)
 
                                 if identity.validate(signature, signed_data):
-                                    self.__remote_identity = identity
-                                    if self.callbacks.remote_identified != None:
-                                        try:
-                                            self.callbacks.remote_identified(self, self.__remote_identity)
-                                        except Exception as e:
-                                            RNS.log("Error while executing remote identified callback from "+str(self)+". The contained exception was: "+str(e), RNS.LOG_ERROR)
+                                    if RNS.Reticulum.get_instance().is_blackholed(identity.hash):
+                                        RNS.log(f"Terminating incoming link from blackholed identity {RNS.prettyhexrep(identity.hash)}", RNS.LOG_DEBUG) if RNS.sl(RNS.LOG_DEBUG) else None
+                                        self.teardown()
+
+                                    else:
+                                        self.__remote_identity = identity
+                                        if self.callbacks.remote_identified != None:
+                                            try: self.callbacks.remote_identified(self, self.__remote_identity)
+                                            except Exception as e: RNS.log(f"Error while executing remote identified callback from {self}. The contained exception was: "+str(e), RNS.LOG_ERROR)
                                 
                                     self.__update_phy_stats(packet, query_shared=True)
 

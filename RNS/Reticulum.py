@@ -1196,6 +1196,7 @@ class Reticulum:
                     if path == "packet_snr":            rpc_connection.send(self.get_packet_snr(call["packet_hash"]))
                     if path == "packet_q":              rpc_connection.send(self.get_packet_q(call["packet_hash"]))
                     if path == "blackholed_identities": rpc_connection.send(self.get_blackholed_identities())
+                    if path == "is_blackholed":         rpc_connection.send(self.is_blackholed(call["identity_hash"]))
 
                 if "drop" in call:
                     path = call["drop"]
@@ -1672,6 +1673,20 @@ class Reticulum:
                 return response
             
         else: return RNS.Transport.blackholed_identities
+
+    def is_blackholed(self, identity):
+        if   type(identity) == RNS.Identity: identity_hash = identity.hash
+        elif type(identity) == bytes: identity_hash = identity
+        else: raise TypeError("Invalid identity for blackhole check, must be hash as bytes or RNS.Identity")
+        if len(identity_hash) != RNS.Reticulum.TRUNCATED_HASHLENGTH//8: raise ValueError("Invalid identity hash length for blackhole check")
+
+        if self.is_connected_to_shared_instance:
+                rpc_connection = self.get_rpc_client()
+                rpc_connection.send({"get": "is_blackholed", "identity_hash": identity_hash})
+                response = rpc_connection.recv()
+                return response
+
+        else: return identity_hash in RNS.Transport.blackholed_identities
 
     def blackhole_identity(self, identity_hash, until=None, reason=None):
         if len(identity_hash) != RNS.Reticulum.TRUNCATED_HASHLENGTH//8: return False

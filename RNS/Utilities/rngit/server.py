@@ -410,6 +410,24 @@ class ReticulumGitClient():
         resolved = resolve(alias)
         return resolved
 
+    def __commit_hash_from_tag(self, tag, repo_path="./"):
+        if not ReticulumGitNode._ensure_git(): return None
+        else:
+            try:
+                result = subprocess.run(["git", "rev-list", "-n", "1", tag], cwd=repo_path, capture_output=True, text=True, check=False)
+                if result.returncode != 0:
+                    RNS.log(f"Could not resolve commit hash for tag {tag}: {result.stderr.strip()}", RNS.LOG_DEBUG)
+                    return None
+
+                else:
+                    commit_hash = result.stdout.strip()
+                    if commit_hash: return commit_hash
+                    else: return None
+
+            except Exception as e:
+                RNS.log(f"Error resolving commit hash for tag {tag}: {e}", RNS.LOG_DEBUG)
+                return None
+
     def abort(self, msg):
         print(msg); exit(1)
 
@@ -1015,7 +1033,8 @@ class ReticulumGitClient():
             if len(parts) < 2: self.abort("Invalid release specification\nDid you provide both a tag and artifacts path such as \"1.0.0:./dist\"?")
             tag = parts[0]
             artifacts_path = os.path.expanduser(parts[1])
-            commit_hash = None # TODO: Get commit hash from tag
+            commit_hash = self.__commit_hash_from_tag(tag)
+            if not commit_hash: print(f"Could not get commit hash for tag {tag}. Does the tag exist in the local repository?")
 
             if not os.path.isdir(artifacts_path): self.abort("Specified artifacts directory does not exist")
             artifacts = [f for f in os.listdir(artifacts_path) if os.path.isfile(os.path.join(artifacts_path, f))]

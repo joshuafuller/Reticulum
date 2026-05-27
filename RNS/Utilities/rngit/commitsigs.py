@@ -227,29 +227,50 @@ def verify(args):
     author = ""
     for line in message_lines:
         AUTHOR_TARGET = b"author "
-        if line.startswith(AUTHOR_TARGET):
+        if not line.strip(b""): break
+        elif line.startswith(AUTHOR_TARGET):
             try:
                 spos = line.find(b"<"); epos = line.find(b">")
                 if spos > len(AUTHOR_TARGET) and epos > spos and epos < len(line)-1:
                     author = line[spos+1:epos].decode("utf-8")
+                    break
             except Exception as e: print(f"Error while determining author from signed commit"); return 1
     
     committer = ""
     for line in message_lines:
         COMMITTER_TARGET = b"committer "
-        if line.startswith(COMMITTER_TARGET):
+        if not line.strip(b""): break
+        elif line.startswith(COMMITTER_TARGET):
             try:
                 spos = line.find(b"<"); epos = line.find(b">")
                 if spos > len(COMMITTER_TARGET) and epos > spos and epos < len(line)-1:
                     committer = line[spos+1:epos].decode("utf-8")
+                    break
             except Exception as e: print(f"Error while determining committer from signed commit"); return 1
         
+    tagger = ""
+    is_tag = False
+    for line in message_lines:
+        TAG_TARGET = b"tag "
+        TAGGER_TARGET = b"tagger "
+        if not line.strip(b""): break
+        elif line.startswith(TAG_TARGET): is_tag = True
+        elif line.startswith(TAGGER_TARGET) and is_tag:
+            try:
+                spos = line.find(b"<"); epos = line.find(b">")
+                if spos > len(TAGGER_TARGET) and epos > spos and epos < len(line)-1:
+                    tagger = line[spos+1:epos].decode("utf-8")
+                    break
+            except Exception as e: print(f"Error while determining tagger from signed commit"); return 1
+
     if ssh_sig["namespace"] != NAMESPACE_GIT: print(f"Invalid commit signature namespace", file=sys.stderr); return 1
 
     rsg = ssh_sig["signature_data"]
     valid, signed_data, signing_identity = validate_rsg(rsg, message)
     
     if not valid: print(f"Invalid signature", file=sys.stderr); return 1
+
+    if is_tag: author = tagger
 
     signer_hash = RNS.hexrep(signing_identity.hash, delimit=False)
     if not author == signer_hash: print(f"Commit not signed by author <{author}>"); return 1

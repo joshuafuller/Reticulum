@@ -458,6 +458,9 @@ class Reticulum:
                         RNS.loglevel = 0
                     if RNS.loglevel > 7:
                         RNS.loglevel = 7
+                elif option == "logtimestamps":
+                    value = self.config["logging"].as_bool(option)
+                    RNS.logtimestamps = bool(value)
 
         if "reticulum" in self.config:
             for option in self.config["reticulum"]:

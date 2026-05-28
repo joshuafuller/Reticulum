@@ -262,6 +262,12 @@ instance_name = default
 
 loglevel = 4
 
+# You can disable timestamp inclusion in logs. Useful if
+# you want to use an external logging tool that provides
+# its own timestamps or custom formatting.
+
+# logtimestamps = no
+
 
 # The interfaces section defines the physical and virtual
 # interfaces Reticulum will use to communicate on. This

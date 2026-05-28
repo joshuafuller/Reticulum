@@ -82,6 +82,7 @@ loglevel        = LOG_NOTICE
 logfile         = None
 logdest         = LOG_STDOUT
 logcall         = None
+logtimestamps   = True
 logtimefmt      = "%Y-%m-%d %H:%M:%S"
 logtimefmt_p    = "%H:%M:%S.%f"
 compact_log_fmt = False
@@ -127,8 +128,8 @@ def log(msg, level=3, _override_destination = False, pt=False):
     if loglevel >= level:
         if pt: logstring = "["+precise_timestamp_str(time.time())+"] "+loglevelname(level)+" "+msg
         else:
-            if not compact_log_fmt: logstring = "["+timestamp_str(time.time())+"] "+loglevelname(level)+" "+msg
-            else:                   logstring = "["+timestamp_str(time.time())+"] "+msg
+            if not compact_log_fmt: logstring = ("["+timestamp_str(time.time())+"] " if logtimestamps else "")+loglevelname(level)+" "+msg
+            else:                   logstring = ("["+timestamp_str(time.time())+"] " if logtimestamps else "")+msg
 
         with logging_lock:
             if (logdest == LOG_STDOUT or _always_override_destination or _override_destination):

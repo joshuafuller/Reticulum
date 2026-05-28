@@ -1437,6 +1437,24 @@ Date:   Mon Jan 15 09:30:00 2026 +0100
 </pre></div>
 </div>
 <p>The output shows whether the commit signature is valid, and whether the author field matches the signing identity.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>If you want to display both the identity hash and LXMF address for authors, you can generate a <code class="docutils literal notranslate"><span class="pre">.mailmap</span></code> file that resolves identities to LXMF addresses with the following script:</p>
+<div class="highlight-#!/bin/bash notranslate"><div class="highlight"><pre><span></span>DIR=&quot;$( cd &quot;$( dirname &quot;${BASH_SOURCE[0]}&quot; )&quot; &gt;/dev/null 2&gt;&amp;1 &amp;&amp; pwd )&quot;
+cd $DIR
+
+id_regex=&quot;&lt;([0-9a-f]{32})( .*)*&gt;&quot;
+extract_id=&quot;s/.*$id_regex/\1/g&quot;
+
+rm -f .mailmap
+git shortlog -se | grep -Ee &quot;$id_regex&quot; | sed -r &quot;$extract_id&quot; | while read -r id ; do
+    if lxmf=$(rnid -i $id -H lxmf.delivery | grep -Ee &quot;destination for this Identity is&quot; | sed -r &quot;$extract_id&quot;); then
+        echo &quot;&lt;$id lxmf:$lxmf&gt; &lt;$id&gt;&quot; &gt;&gt; .mailmap
+    fi
+done
+</pre></div>
+</div>
+</div>
 </section>
 </section>
 </section>

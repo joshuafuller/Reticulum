@@ -1491,3 +1491,22 @@ To view signature information for commits, use Git's standard ``--show-signature
       Refactored module
 
 The output shows whether the commit signature is valid, and whether the author field matches the signing identity.
+
+.. tip::
+   If you want to display both the identity hash and LXMF address for authors, you can generate a ``.mailmap`` file that resolves identities to LXMF addresses with the following script:
+   
+   .. code::
+      #!/bin/bash
+
+      DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+      cd $DIR
+
+      id_regex="<([0-9a-f]{32})( .*)*>"
+      extract_id="s/.*$id_regex/\1/g"
+
+      rm -f .mailmap
+      git shortlog -se | grep -Ee "$id_regex" | sed -r "$extract_id" | while read -r id ; do
+          if lxmf=$(rnid -i $id -H lxmf.delivery | grep -Ee "destination for this Identity is" | sed -r "$extract_id"); then
+              echo "<$id lxmf:$lxmf> <$id>" >> .mailmap
+          fi
+      done

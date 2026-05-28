@@ -218,7 +218,7 @@ class Identity:
 
             try:
                 with open(temp_file,"wb") as file: umsgpack.dump(Identity.known_destinations.copy(), file)
-                os.rename(temp_file, RNS.Reticulum.storagepath+f"/known_destinations")
+                os.replace(temp_file, RNS.Reticulum.storagepath+f"/known_destinations")
 
             except Exception as e:
                 RNS.log(f"Error while serializing and writing known destinations: {e}", RNS.LOG_ERROR)

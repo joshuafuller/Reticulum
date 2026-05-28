@@ -853,9 +853,27 @@ Or to retrieve all source archives:
 
 If your pattern contains no wildcard characters, it must match an artifact name exactly, which is useful for fetching single, specific artifacts. When a pattern matches multiple artifacts, all matched files are fetched and verified. If no artifacts match the pattern, the fetch aborts with an error indicating no matches were found.
 
-**Offline Verification**
+Offline Verification
+--------------------
 
 Because the release manifest contains embedded signatures, you can verify the integrity of release artifacts offline, without connecting to the repository node. The ``rnid`` and ``rngit`` utilities can validate artifact signatures against ``.rsg`` and manifest files.
+
+**Using a release manifest:**
+
+Ensure the release manifest is located in the same directory as the release artifacts, then run:
+
+.. code:: text
+
+  # Verify all artifacts in the manifest
+  $ rngit release myapp-1.2.0.rsm verify
+
+  # Or, verify only specific artifacts
+  $ rngit release myapp-1.2.0.rsm verify "latest:*.whl"
+
+This will load the manifest, and verify all files currently on-disk, but will not attempt to fetch the latest release manifest from the origin, or update local files to match it.
+
+.. note::
+   The ``verify`` operation is functionally equivalent to using the ``fetch`` operation with the ``--offline`` flag, and they can be used interchangably.
 
 **For individual files:**
 
@@ -867,16 +885,6 @@ Ensure the ``.rsg`` signature is located in the same directory as the release ar
 
 This validates that the artifact file matches the signature created during the release process. Combined with the manifest's own signature, this provides end-to-end verification from the original release creation to the final installation.
 
-**For a complete release:**
-
-Ensure the release manifest is located in the same directory as the release artifacts, then run:
-
-.. code:: text
-
-  $ rngit release myapp-1.2.0.rsm fetch --offline
-
-This will load the manifest, and verify all files currently on-disk, but will not attempt to fetch the latest release manifest from the origin, or update local files to match it.
-
 .. _git-release-create:
 
 Creating Signed Releases
@@ -886,7 +894,7 @@ Reticulum and the ``rngit`` system makes it easy to create signed releases that 
 
 1. Generates an Ed25519 signature for each artifact file using your identity's signing key
 2. Creates ``.rsg`` signature files alongside each artifact in your distribution directory
-3. Constructs a signed release manifest (``manifest.rsm``) containing metadata, an artifact list, and embedded signatures
+3. Constructs a signed ``manifest.rsm`` release manifest containing metadata, an artifact list, and embedded signatures
 4. Transmits both artifacts, signatures and manifest to the remote node specified as release origin
 
 As an example, to create and publish a release from all files in the folder named ``dist``, simply run:

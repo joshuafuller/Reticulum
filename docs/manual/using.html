@@ -1374,7 +1374,7 @@ remote_management_allowed = 9fb6d773498fb3feda407ed8ef2c3229, 2d882c5586e548d79b
 </section>
 <section id="automated-list-sourcing">
 <h3>Automated List Sourcing<a class="headerlink" href="#automated-list-sourcing" title="Link to this heading">¶</a></h3>
-<p>Manually blocking identities is effective for immediate threats, but maintaining an up-to-date blocklist for a large network is impractical. Reticulum supports <strong>automated list sourcing</strong>, allowing your node to subscribe to blackhole lists maintained by trusted peers, or a central authority you manage yourself.</p>
+<p>Manually blocking identities is effective for immediate threats and annoyances, but maintaining an up-to-date blocklist across many nodes on a large network is impractical. Reticulum supports <strong>automated list sourcing</strong>, allowing your node to subscribe to blackhole lists maintained by trusted peers, or a central authority you manage yourself.</p>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
 <p><strong>Verify Before Subscribing!</strong> Subscribing to a blackhole source is a powerful action that grants that source the ability to dictate who you can communicate with. Before adding a source to your configuration, verify that the maintainer aligns with your usage policy and values. Blindly subscribing to untrusted lists could inadvertently block legitimate peers or essential services.</p>
@@ -1386,6 +1386,9 @@ remote_management_allowed = 9fb6d773498fb3feda407ed8ef2c3229, 2d882c5586e548d79b
 <span class="na">...</span>
 <span class="c1"># Automatically fetch blackhole lists from these trusted sources</span>
 <span class="na">blackhole_sources</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">521c87a83afb8f29e4455e77930b973b, 68a4aa91ac350c4087564e8a69f84e86</span>
+
+<span class="c1"># Optional update interval, defaults to one hour</span>
+<span class="na">blackhole_update_interval</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">60</span>
 <span class="na">...</span>
 </pre></div>
 </div>

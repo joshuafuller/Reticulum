@@ -234,6 +234,7 @@ to participate in the development of Reticulum itself.
     * [Configuration Example](git.md#configuration-example)
   * [Verified Releases](git.md#verified-releases)
     * [Obtaining Verified Releases](git.md#obtaining-verified-releases)
+    * [Offline Verification](git.md#offline-verification)
     * [Creating Signed Releases](git.md#creating-signed-releases)
   * [Release Management](git.md#release-management)
     * [The Release Workflow](git.md#the-release-workflow)

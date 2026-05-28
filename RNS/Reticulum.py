@@ -260,6 +260,7 @@ class Reticulum:
         Reticulum.__autoconnect_discovered_interfaces = False
         Reticulum.__required_discovery_value          = None
         Reticulum.__publish_blackhole                 = False
+        Reticulum.__blackhole_update_interval         = RNS.Discovery.BlackholeUpdater.UPDATE_INTERVAL
         Reticulum.__blackhole_sources                 = []
         Reticulum.__interface_sources                 = []
         Reticulum.__default_ar_target                 = None
@@ -452,12 +453,9 @@ class Reticulum:
                 value = self.config["logging"][option]
                 if option == "loglevel" and self.requested_loglevel == None:
                     RNS.loglevel = int(value)
-                    if self.requested_verbosity != None:
-                        RNS.loglevel += self.requested_verbosity
-                    if RNS.loglevel < 0:
-                        RNS.loglevel = 0
-                    if RNS.loglevel > 7:
-                        RNS.loglevel = 7
+                    if self.requested_verbosity != None: RNS.loglevel += self.requested_verbosity
+                    if RNS.loglevel < 0:                 RNS.loglevel = 0
+                    if RNS.loglevel > 7:                 RNS.loglevel = 7
                 elif option == "logtimestamps":
                     value = self.config["logging"].as_bool(option)
                     RNS.logtimestamps = bool(value)
@@ -584,6 +582,11 @@ class Reticulum:
                         except Exception as e: raise ValueError(f"Invalid identity hash for remote blackhole source: {hexhash}")
                         if not source_identity_hash in Reticulum.__blackhole_sources: Reticulum.__blackhole_sources.append(source_identity_hash)
                 
+                if option == "blackhole_update_interval":
+                    v = self.config["reticulum"].as_float(option)
+                    if v < 2: v = 2
+                    Reticulum.__blackhole_update_interval = v*60
+
                 if option == "interface_discovery_sources":
                     v = self.config["reticulum"].as_list(option)
                     for hexhash in v:
@@ -1796,6 +1799,10 @@ class Reticulum:
         :returns: A list of identity hashes.
         """
         return Reticulum.__blackhole_sources
+
+    @staticmethod
+    def blackhole_update_interval():
+        return Reticulum.__blackhole_update_interval
 
     @staticmethod
     def discovered_interfaces():

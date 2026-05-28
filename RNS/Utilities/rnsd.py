@@ -248,6 +248,11 @@ instance_name = default
 
 # blackhole_sources = 521c87a83afb8f29e4455e77930b973b
 
+# You can set the interval in minutes at which remote
+# blackhole sources are updated. Defaults to one hour.
+
+# blackhole_update_interval = 60
+
 
 [logging]
 # Valid log levels are 0 through 7:

@@ -746,7 +746,7 @@ class BlackholeUpdater():
                     if identity_hash in self.last_updates: last_update = self.last_updates[identity_hash]
                     else:                                  last_update = 0
 
-                    if now > last_update+self.UPDATE_INTERVAL:
+                    if now > last_update+RNS.Reticulum.blackhole_update_interval():
                         try:
                             destination_hash = RNS.Destination.hash_from_name_and_identity("rnstransport.info.blackhole", identity_hash)
                             RNS.log(f"Attempting blackhole list update from {RNS.prettyhexrep(identity_hash)}...", RNS.LOG_DEBUG)

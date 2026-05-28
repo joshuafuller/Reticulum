@@ -1368,21 +1368,21 @@ New identity &lt;1a54d64db7e8beca6f2c6cd17b0cb479&gt; written to /home/user/.rng
 <p>Enabling Reticulum commit signing for all repositories is as simple as:</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>$ git config --global gpg.format ssh
 $ git config --global gpg.ssh.program rngcs
-$ git config --global gpg.ssh.allowedsignersfile
+$ git config --global gpg.ssh.allowedsignersfile none
 $ git config --global user.signingKey ~/.rngit/client_identity
 </pre></div>
 </div>
 <p>With this configuration, all commits you sign with <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">commit</span> <span class="pre">-S</span></code> will use your Reticulum identity.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>The <code class="docutils literal notranslate"><span class="pre">gpg.ssh.allowedsignersfile</span></code> configuration key <strong>must</strong> be <em>set</em> for <code class="docutils literal notranslate"><span class="pre">git</span></code> to allow invoking the signing and verification shim. It is not actually used by <code class="docutils literal notranslate"><span class="pre">rngcs</span></code>, and can be set to an empty or arbitrary value. All validation operations happen exclusively based on the information in the embedded RSG data.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">gpg.ssh.allowedsignersfile</span></code> configuration key <strong>must</strong> be <em>set</em> for <code class="docutils literal notranslate"><span class="pre">git</span></code> to allow invoking the signing and verification shim. It is not actually used by <code class="docutils literal notranslate"><span class="pre">rngcs</span></code>, and can be set to an arbitrary value. All validation operations happen exclusively based on the information in the embedded RSG data.</p>
 </div>
 <p><strong>Per-Repository Configuration</strong></p>
 <p>To enable signing only for a specific repository:</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>$ cd /path/to/repository
 $ git config --local gpg.format ssh
 $ git config --local gpg.ssh.program rngcs
-$ git config --local gpg.ssh.allowedsignersfile
+$ git config --local gpg.ssh.allowedsignersfile none
 $ git config --local user.signingKey ~/.rngit/client_identity
 </pre></div>
 </div>

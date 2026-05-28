@@ -1330,14 +1330,14 @@ Enabling Reticulum commit signing for all repositories is as simple as:
 ```text
 $ git config --global gpg.format ssh
 $ git config --global gpg.ssh.program rngcs
-$ git config --global gpg.ssh.allowedsignersfile
+$ git config --global gpg.ssh.allowedsignersfile none
 $ git config --global user.signingKey ~/.rngit/client_identity
 ```
 
 With this configuration, all commits you sign with `git commit -S` will use your Reticulum identity.
 
 #### NOTE
-The `gpg.ssh.allowedsignersfile` configuration key **must** be *set* for `git` to allow invoking the signing and verification shim. It is not actually used by `rngcs`, and can be set to an empty or arbitrary value. All validation operations happen exclusively based on the information in the embedded RSG data.
+The `gpg.ssh.allowedsignersfile` configuration key **must** be *set* for `git` to allow invoking the signing and verification shim. It is not actually used by `rngcs`, and can be set to an arbitrary value. All validation operations happen exclusively based on the information in the embedded RSG data.
 
 **Per-Repository Configuration**
 
@@ -1347,7 +1347,7 @@ To enable signing only for a specific repository:
 $ cd /path/to/repository
 $ git config --local gpg.format ssh
 $ git config --local gpg.ssh.program rngcs
-$ git config --local gpg.ssh.allowedsignersfile
+$ git config --local gpg.ssh.allowedsignersfile none
 $ git config --local user.signingKey ~/.rngit/client_identity
 ```
 

@@ -209,24 +209,11 @@ def check_novalidate(args):
 
     except Exception: return 1
 
-def verify(args):
-    sigfile = args.sigfile
-    principal = args.principal
-    if not sigfile or not os.path.isfile(sigfile): print("Error: Signature file not found", file=sys.stderr); return 1
-    
-    message = sys.stdin.buffer.read()
+def extract_commit_author(message):
     message_lines = message.splitlines()
-
-    try:
-        with open(sigfile, 'r') as f: armored_sig = f.read()
-        raw_sig = unarmor_ssh_signature(armored_sig)
-        ssh_sig = parse_ssh_signature(raw_sig)
-    
-    except Exception as e: print(f"Error parsing signature: {e}", file=sys.stderr); return 1
-
     author = ""
+    AUTHOR_TARGET = b"author "
     for line in message_lines:
-        AUTHOR_TARGET = b"author "
         if not line.strip(b""): break
         elif line.startswith(AUTHOR_TARGET):
             try:
@@ -235,10 +222,14 @@ def verify(args):
                     author = line[spos+1:epos].decode("utf-8")
                     break
             except Exception as e: print(f"Error while determining author from signed commit"); return 1
-    
+
+    return author
+
+def extract_commit_committer(message):
+    message_lines = message.splitlines()
     committer = ""
+    COMMITTER_TARGET = b"committer "
     for line in message_lines:
-        COMMITTER_TARGET = b"committer "
         if not line.strip(b""): break
         elif line.startswith(COMMITTER_TARGET):
             try:
@@ -247,7 +238,11 @@ def verify(args):
                     committer = line[spos+1:epos].decode("utf-8")
                     break
             except Exception as e: print(f"Error while determining committer from signed commit"); return 1
-        
+
+    return committer
+
+def extract_commit_tagger(message):
+    message_lines = message.splitlines()
     tagger = ""
     is_tag = False
     for line in message_lines:
@@ -262,6 +257,26 @@ def verify(args):
                     tagger = line[spos+1:epos].decode("utf-8")
                     break
             except Exception as e: print(f"Error while determining tagger from signed commit"); return 1
+
+    return tagger, is_tag
+
+def verify(args):
+    sigfile = args.sigfile
+    principal = args.principal
+    if not sigfile or not os.path.isfile(sigfile): print("Error: Signature file not found", file=sys.stderr); return 1
+
+    message = sys.stdin.buffer.read()
+
+    try:
+        with open(sigfile, 'r') as f: armored_sig = f.read()
+        raw_sig = unarmor_ssh_signature(armored_sig)
+        ssh_sig = parse_ssh_signature(raw_sig)
+
+    except Exception as e: print(f"Error parsing signature: {e}", file=sys.stderr); return 1
+
+    author         = extract_commit_author(message)
+    committer      = extract_commit_committer(message)
+    tagger, is_tag = extract_commit_tagger(message)
 
     if ssh_sig["namespace"] != NAMESPACE_GIT: print(f"Invalid commit signature namespace", file=sys.stderr); return 1
 

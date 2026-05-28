@@ -34,6 +34,8 @@ import threading
 import subprocess
 import urllib.parse
 import RNS
+import struct
+import base64
 from collections import deque
 from datetime import datetime
 from RNS.Utilities.rngit import APP_NAME
@@ -42,6 +44,8 @@ from RNS.Utilities.rngit.highlight import SyntaxHighlighter
 from RNS.vendor.configobj import ConfigObj
 from RNS.vendor import umsgpack as mp
 from RNS._version import __version__
+from RNS.Utilities.rnid import validate_rsg, extract_signed_rsg_data
+from RNS.Utilities.rngit.commitsigs import unarmor_ssh_signature, parse_ssh_signature, extract_commit_author
 
 class NomadNetworkNode():
     APP_NAME              = "nomadnetwork"
@@ -958,6 +962,15 @@ class NomadNetworkNode():
         i_folder = self.icon("folder")
         content_parts.append(f"{self.m_link(f'{i_folder} Browse tree at this commit', self.PATH_TREE, g=group_name, r=repo_name, ref=resolved_hash)}\n\n")
 
+        # Validate and display commit signature status
+        show_sig   =  False
+        sig_status = self.get_commit_signature(repo_path, resolved_hash)
+        if sig_status["signed"]:
+            if   sig_status["valid"] and sig_status["author_match"]: sig_text = f"`FT66BB85Valid, signed by author`f"; show_sig = True
+            elif sig_status["valid"]:                                sig_text = f"`Faa0{self.m_escape(sig_status['message'])}`f"; show_sig = True
+            else:                                                    sig_text = f"`F900{self.m_escape(sig_status['message'])}`f"; show_sig = True
+        else:                                                        sig_text = "Not signed"
+
         # Commit metadata
         if commit_info.get("parents"):
             parent_links = []
@@ -965,14 +978,15 @@ class NomadNetworkNode():
                 parent_link = self.m_link(parent_hash[:7], self.PATH_COMMIT, g=group_name, r=repo_name, ref=ref, h=parent_hash)
                 parent_links.append(parent_link)
 
-            content_parts.append(f"Parents: {' '.join(parent_links)}\n")
+            content_parts.append(f"Parents    : {' '.join(parent_links)}\n")
 
-        content_parts.append(f"Author:  {self.m_escape(commit_info['author_name'])} <{self.m_escape(commit_info['author_email'])}>\n")
-        content_parts.append(f"Date:    {commit_info['author_date']}\n")
+        content_parts.append(f"Author     : {self.m_escape(commit_info['author_name'])} <{self.m_escape(commit_info['author_email'])}>\n")
+        content_parts.append(f"Signature  : {sig_text}\n") if show_sig else None
+        content_parts.append(f"Date       : {commit_info['author_date']}\n")
 
         if commit_info.get("committer_name") != commit_info.get("author_name"):
-            content_parts.append(f"Commit:  {self.m_escape(commit_info['committer_name'])} <{self.m_escape(commit_info['committer_email'])}>\n")
-            content_parts.append(f"Date:    {commit_info['committer_date']}\n")
+            content_parts.append(f"Committer : {self.m_escape(commit_info['committer_name'])} <{self.m_escape(commit_info['committer_email'])}>\n")
+            content_parts.append(f"Date      : {commit_info['committer_date']}\n")
 
         content_parts.append("\n")
 
@@ -2197,7 +2211,8 @@ class NomadNetworkNode():
                      "committer_date": lines[6],
                      "message": "\n".join(lines[7:]).strip(),
                      "files": [],
-                     "diff": None }
+                     "diff": None,
+                     "signature_status": None }
 
             # Get file change statistics
             stats_result = subprocess.run(["git", "diff-tree", "--numstat", "-r", commit_hash],
@@ -2266,6 +2281,84 @@ class NomadNetworkNode():
         except Exception as e:
             RNS.log(f"Error getting commit info: {e}", RNS.LOG_WARNING)
             return None
+
+    def get_commit_signature(self, repo_path, commit_hash):
+        try:
+            result = subprocess.run(["git", "cat-file", "-p", commit_hash],
+                                    cwd=repo_path, capture_output=True, text=True,
+                                    timeout=self.GIT_COMMAND_TIMEOUT, check=False)
+
+            if result.returncode != 0:
+                return {"signed": False, "valid": False, "signer_hash": None,
+                        "author_match": False, "message": "Could not read commit object"}
+
+            commit_content = result.stdout
+            lines = commit_content.split("\n")
+            sig_lines = []
+            in_signature = False
+            signed_content_lines = []
+
+            for line in lines:
+                if line.startswith("gpgsig ") or line.startswith("gpgsig-sha256 "):
+                    in_signature = True
+                    sig_start = line.find(" ") + 1
+                    sig_lines.append(line[sig_start:])
+
+                elif in_signature:
+                    if line.startswith(" "): sig_lines.append(line[1:])
+                    else:
+                        in_signature = False
+                        signed_content_lines.append(line)
+
+                else: signed_content_lines.append(line)
+
+            if not sig_lines:
+                return {"signed": False, "valid": False, "signer_hash": None,
+                        "author_match": False, "message": "Not signed"}
+
+            armored_sig = "\n".join(sig_lines)
+            signed_content = "\n".join(signed_content_lines).encode("utf-8")
+
+            try:
+                sig_data = unarmor_ssh_signature(armored_sig)
+                try: rsg = parse_ssh_signature(sig_data)["signature_data"]
+                except ValueError as e:
+                    return {"signed": True, "valid": False, "signer_hash": None,
+                            "author_match": False, "message": "Malformed SSH wrapping for RSG data"}
+
+                valid, signed_rsg_data, signing_identity = validate_rsg(rsg, signed_content)
+                if not valid:
+                    return {"signed": True, "valid": False, "signer_hash": None,
+                            "author_match": False, "message": "Invalid signature"}
+
+                signer_hash = RNS.hexrep(signing_identity.hash, delimit=False)
+                author = extract_commit_author(signed_content)
+
+                if not author:
+                    return {"signed": True, "valid": True, "signer_hash": signer_hash,
+                            "author_match": False, "message": "Could not verify author"}
+
+                if author == signer_hash:
+                    return {"signed": True, "valid": True, "signer_hash": signer_hash,
+                            "author_match": True, "message": f"Valid, signed by <{signer_hash}>"}
+                else:
+                    return {"signed": True, "valid": True, "signer_hash": signer_hash,
+                            "author_match": False, "message": f"Invalid signer <{signer_hash}>, author is <{author}>"}
+
+            except Exception as e:
+                RNS.log(f"Error validating commit signature: {e}", RNS.LOG_DEBUG)
+                return {"signed": True, "valid": False, "signer_hash": None,
+                        "author_match": False, "message": "Signature validation error"}
+
+        except subprocess.TimeoutExpired:
+            RNS.log(f"Timeout checking commit signature", RNS.LOG_WARNING)
+            return {"signed": False, "valid": False, "signer_hash": None,
+                    "author_match": False, "message": "Timeout"}
+
+        except Exception as e:
+            RNS.log(f"Error checking commit signature: {e}", RNS.LOG_DEBUG)
+            return {"signed": False, "valid": False, "signer_hash": None,
+                    "author_match": False, "message": "Error"}
 
     def get_readme_content(self, repo_path):
         readme_names = [ ("README.mu", False),  ("Readme.mu", False),  ("readme.mu", False), ("README", False),

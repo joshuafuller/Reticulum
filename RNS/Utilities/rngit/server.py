@@ -90,6 +90,7 @@ def program_setup(configdir, rnsconfigdir=None, verbosity=0, quietness=0, servic
             if   operation == "list":   git_client.list_releases(remote=task["remote"])
             elif operation == "view":   git_client.view_release(remote=task["remote"], target=task["target"])
             elif operation == "fetch":  git_client.fetch_release(remote=task["remote"], target=task["target"], signer=task["signer"], offline=task["offline"])
+            elif operation == "verify": git_client.fetch_release(remote=task["remote"], target=task["target"], signer=task["signer"], offline=True)
             elif operation == "create": git_client.create_release(remote=task["remote"], target=task["target"], signer=task["signer"], name=task["name"], no_upload=task["no_upload"])
             elif operation == "delete": git_client.delete_release(remote=task["remote"], target=task["target"])
             elif operation == "latest": git_client.latest_release(remote=task["remote"], target=task["target"])
@@ -167,7 +168,7 @@ def main():
             parser.add_argument('-L', '--local', action='store_true', default=False, help="generate release locally, but don't upload")
             parser.add_argument('-o', '--offline', action='store_true', default=False, help="verify manifest locally, but don't fetch updates")
             parser.add_argument("repository", nargs="?", default=None, help="URL of remote repository, or path to RSM manifest", type=str)
-            parser.add_argument("operation", nargs="?", default=None, help="list, view, fetch, create, latest or delete", type=str)
+            parser.add_argument("operation", nargs="?", default=None, help="list, view, fetch, verify, create, latest or delete", type=str)
             parser.add_argument("target", nargs="?", default=None, help="tag and path to release artifacts directory", type=str)
 
         elif subcommand == "perms":

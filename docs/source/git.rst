@@ -1430,7 +1430,7 @@ To enable signing only for a specific repository:
   $ cd /path/to/repository
   $ git config --local gpg.format ssh
   $ git config --local gpg.ssh.program rngcs
-  $ git config --local gpg.ssh.allowedsignersfile 
+  $ git config --local gpg.ssh.allowedsignersfile none
   $ git config --local user.signingKey ~/.rngit/client_identity
 
 This is useful when you want to use different identities for different projects, or when only specific repositories require signed commits.

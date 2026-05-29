@@ -1828,7 +1828,6 @@ class Transport:
                             else:
                                 # If this destination is unknown in our table
                                 # we should add it
-                                Transport.mark_path_unknown_state(packet.destination_hash)
                                 should_add = True
 
                             if should_add:

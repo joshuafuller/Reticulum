@@ -57,7 +57,7 @@ manual:
 	make -C docs latexpdf epub
 
 distcollect:
-	cp docs/Reticulum\ Manual.* dist
+	mv docs/Reticulum\ Manual.* dist
 
 build_spkg: remove_symlinks build_sdist create_symlinks
 

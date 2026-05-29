@@ -1326,7 +1326,7 @@ Each document is a numbered directory containing:
 
 **Nomad Network Interface**
 
-When the Nomad Network page node is enabled, work documents are viewable through the web interface. The work page lists all documents with their status, and clicking a document shows its full content and updates.
+When the Nomad Network page node is enabled, work documents are viewable through the nomadnet interface. The work page lists all documents with their status, and clicking a document shows its full content and updates.
 
 Cryptographic Attribution
 -------------------------

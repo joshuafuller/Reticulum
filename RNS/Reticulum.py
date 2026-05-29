@@ -669,6 +669,9 @@ class Reticulum:
             self.shared_instance_type = "tcp"
             self.use_af_unix          = False
 
+        if self.shared_instance_type == "tcp":
+            self.local_socket_path = None
+
         if self.local_socket_path == None and self.use_af_unix:
             self.local_socket_path = "default"
 

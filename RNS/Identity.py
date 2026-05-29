@@ -316,6 +316,7 @@ class Identity:
         no_path    = 0
         retained   = 0
         never_used = 0
+        ratchetdir = RNS.Reticulum.storagepath+"/ratchets"
 
         with Identity.known_destinations_lock: destination_hashes = list(Identity.known_destinations.keys())
         for destination_hash in destination_hashes:
@@ -358,6 +359,12 @@ class Identity:
                 if destination_hash in Identity.known_destinations:
                     Identity.known_destinations.pop(destination_hash)
                     removed += 1
+
+            try:
+                hexhash = RNS.hexrep(destination_hash, delimit=False)
+                ratchet_path = f"{ratchetdir}/{hexhash}"
+                if os.path.isfile(ratchet_path): os.unlink(ratchet_path)
+            except Exception as e: RNS.log(f"Could not clean stale ratchets for {RNS.prettyhexrep(destination_hash)}: {e}", RNS.LOG_WARNING)
 
         # RNS.log(f"Total destinations: {total}, stale: {len(stale)}, removed: {removed}, no path: {no_path}, never used: {never_used}, with path: {total-no_path}, used: {total-never_used}, retained: {retained}. Completed in {RNS.prettyshorttime(time.time()-st)}", RNS.LOG_WARNING) # TODO: Remove
         if not RNS.Transport.owner.is_connected_to_shared_instance: Identity.save_known_destinations(recombine=False)

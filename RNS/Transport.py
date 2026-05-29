@@ -1755,6 +1755,7 @@ class Transport:
                         random_blob = packet.data[RNS.Identity.KEYSIZE//8+RNS.Identity.NAME_HASH_LENGTH//8:RNS.Identity.KEYSIZE//8+RNS.Identity.NAME_HASH_LENGTH//8+10]
                         random_blobs = []
                         with Transport.inbound_announce_lock:
+                            announced_destination_known |= packet.destination_hash in Transport.path_table
                             if announced_destination_known:
                                 random_blobs = Transport.path_table[packet.destination_hash][IDX_PT_RANDBLOBS]
 

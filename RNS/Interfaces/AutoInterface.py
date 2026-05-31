@@ -428,14 +428,22 @@ class AutoInterface(Interface):
                                         if ifname in self.interface_servers:
                                             RNS.log("Shutting down previous UDP listener for "+str(self)+" "+str(ifname), RNS.LOG_DEBUG)
                                             previous_server = self.interface_servers[ifname]
-                                            def shutdown_server():
-                                                previous_server.shutdown()
+                                            def shutdown_server(): previous_server.shutdown()
                                             threading.Thread(target=shutdown_server, daemon=True).start()
 
                                         RNS.log("Starting new UDP listener for "+str(self)+" "+str(ifname), RNS.LOG_DEBUG)
 
-                                        udp_server = socketserver.UDPServer(listen_address, self.handler_factory(self.process_incoming))
-                                        self.interface_servers[ifname] = udp_server
+                                        retry_delay = 1.25
+                                        listener_started = False
+                                        while not listener_started:
+                                            try:
+                                                time.sleep(retry_delay)
+                                                udp_server = socketserver.UDPServer(listen_address, self.handler_factory(self.process_incoming))
+                                                self.interface_servers[ifname] = udp_server
+                                                listener_started = True
+                                            except Exception as e:
+                                                RNS.log(f"Could not start new UDP listener for {self} on {listen_address}: {e}", RNS.LOG_WARNING)
+                                                RNS.log(f"Retrying in {retry_delay} seconds", RNS.LOG_WARNING)
 
                                         thread = threading.Thread(target=udp_server.serve_forever)
                                         thread.daemon = True

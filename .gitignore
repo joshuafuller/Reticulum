@@ -14,3 +14,4 @@ tests/rnsconfig/logfile*
 *.data
 *.result
 .buildinfo.bak
+docs/Reticulum Manual.*

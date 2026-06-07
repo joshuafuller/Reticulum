@@ -1,3 +1,39 @@
+### 2026-06-01: RNS 1.3.5
+
+This maintenance release contains an important fix for `AutoInterface` reliability when roaming between different physical networks.
+
+**Changes**
+- Fixed UDP listener replacement deadlocking inbound AutoInterface traffic when fast-roaming between physical interfaces or WiFi APs
+- Fixed some paths never resolving when using other interfaces at the same time as a deadlocked AutoInterface
+
+**Verified Retrieval**
+You can retrieve and verify this release over Reticulum using the built-in `rngit release` utility. To retrieve only the installation `.whl` package, and the release manifest for future updates, you can use:
+
+```sh
+rngit release rns://7649a50d84610232d1416b41d2896aff/reticulum/reticulum fetch "latest:rns-*.whl" --signer bc7291552be7a58f361522990465165c
+```
+
+To download all artifacts, including the documentation and source archive, you can use the following command:
+
+```sh
+rngit release rns://7649a50d84610232d1416b41d2896aff/reticulum/reticulum fetch latest:all --signer bc7291552be7a58f361522990465165c
+```
+
+**Release Signatures**
+Release artifacts include a signed `rsm` release manifest and `rsg` signature files that can be validated against the RNS release signing identity `<bc7291552be7a58f361522990465165c>` using `rngit` or `rnid`. To perform an offline verification of all release artifacts using a manifest:
+
+```sh
+rngit release rns_*.rsm verify --signer bc7291552be7a58f361522990465165c
+```
+
+To verify release artifacts using individual `rsg` files, while also verifying the manifest itself, download the `rsm` and `rsg` signatures, make sure they are in the same folder as the release artifact, and run `rnid` signature verification with the release identity as the required signer:
+
+```sh
+rnid -i bc7291552be7a58f361522990465165c -V rns_*.rsm *.rsg
+```
+
+The `rnid` utility will then verify the signatures, and display whether they are valid. If the signature cannot be verified, the release has been tampered with and should be discarded.
+
 ### 2026-05-29: RNS 1.3.4
 
 This release fixes a regression that could cause sub-optimal path selection under conditions where the same announce was received within a very short timespan on different interfaces, as well as a few other bugs and inefficiencies.
@@ -9,70 +45,12 @@ This release fixes a regression that could cause sub-optimal path selection unde
 - Improved cleanup of stale known destinations
 - Improved shared instance RPC handling
 
-**Verified Retrieval**
-You can retrieve and verify this release over Reticulum using the built-in `rngit release` utility. To retrieve only the installation `.whl` package, and the release manifest for future updates, you can use:
-
-```sh
-rngit release rns://7649a50d84610232d1416b41d2896aff/reticulum/reticulum fetch "latest:rns-*.whl" --signer bc7291552be7a58f361522990465165c
-```
-
-To download all artifacts, including the documentation and source archive, you can use the following command:
-
-```sh
-rngit release rns://7649a50d84610232d1416b41d2896aff/reticulum/reticulum fetch latest:all --signer bc7291552be7a58f361522990465165c
-```
-
-**Release Signatures**
-Release artifacts include a signed `rsm` release manifest and `rsg` signature files that can be validated against the RNS release signing identity `<bc7291552be7a58f361522990465165c>` using `rngit` or `rnid`. To perform an offline verification of all release artifacts using a manifest:
-
-```sh
-rngit release rns_*.rsm verify --signer bc7291552be7a58f361522990465165c
-```
-
-To verify release artifacts using individual `rsg` files, while also verifying the manifest itself, download the `rsm` and `rsg` signatures, make sure they are in the same folder as the release artifact, and run `rnid` signature verification with the release identity as the required signer:
-
-```sh
-rnid -i bc7291552be7a58f361522990465165c -V rns_*.rsm *.rsg
-```
-
-The `rnid` utility will then verify the signatures, and display whether they are valid. If the signature cannot be verified, the release has been tampered with and should be discarded.
-
-
 ### 2026-05-28: RNS 1.3.3
 
 This release fixes a regression in persistence of known destination on Windows.
 
 **Changes**
 - Fixed regression in known destinations persist on Windows
-
-**Verified Retrieval**
-You can retrieve and verify this release over Reticulum using the built-in `rngit release` utility. To retrieve only the installation `.whl` package, and the release manifest for future updates, you can use:
-
-```sh
-rngit release rns://7649a50d84610232d1416b41d2896aff/reticulum/reticulum fetch "latest:rns-*.whl" --signer bc7291552be7a58f361522990465165c
-```
-
-To download all artifacts, including the documentation and source archive, you can use the following command:
-
-```sh
-rngit release rns://7649a50d84610232d1416b41d2896aff/reticulum/reticulum fetch latest:all --signer bc7291552be7a58f361522990465165c
-```
-
-**Release Signatures**
-Release artifacts include a signed `rsm` release manifest and `rsg` signature files that can be validated against the RNS release signing identity `<bc7291552be7a58f361522990465165c>` using `rngit` or `rnid`. To perform an offline verification of all release artifacts using a manifest:
-
-```sh
-rngit release rns_*.rsm verify --signer bc7291552be7a58f361522990465165c
-```
-
-To verify release artifacts using individual `rsg` files, while also verifying the manifest itself, download the `rsm` and `rsg` signatures, make sure they are in the same folder as the release artifact, and run `rnid` signature verification with the release identity as the required signer:
-
-```sh
-rnid -i bc7291552be7a58f361522990465165c -V rns_*.rsm *.rsg
-```
-
-The `rnid` utility will then verify the signatures, and display whether they are valid. If the signature cannot be verified, the release has been tampered with and should be discarded.
-
 
 ### 2026-05-28: RNS 1.3.2
 
@@ -86,69 +64,12 @@ This release adds commit signing and validation support to the `rngit` system, a
 - Added option to configure blackhole update interval
 - Added configuration option to log without timestamps
 
-**Verified Retrieval**
-You can retrieve and verify this release over Reticulum using the built-in `rngit release` utility. To retrieve only the installation `.whl` package, and the release manifest for future updates, you can use:
-
-```sh
-rngit release rns://7649a50d84610232d1416b41d2896aff/reticulum/reticulum fetch "latest:rns-*.whl" --signer bc7291552be7a58f361522990465165c
-```
-
-To download all artifacts, including the documentation and source archive, you can use the following command:
-
-```sh
-rngit release rns://7649a50d84610232d1416b41d2896aff/reticulum/reticulum fetch latest:all --signer bc7291552be7a58f361522990465165c
-```
-
-**Release Signatures**
-Release artifacts include a signed `rsm` release manifest and `rsg` signature files that can be validated against the RNS release signing identity `<bc7291552be7a58f361522990465165c>` using `rngit` or `rnid`. To perform an offline verification of all release artifacts using a manifest:
-
-```sh
-rngit release rns_*.rsm verify --signer bc7291552be7a58f361522990465165c
-```
-
-To verify release artifacts using individual `rsg` files, while also verifying the manifest itself, download the `rsm` and `rsg` signatures, make sure they are in the same folder as the release artifact, and run `rnid` signature verification with the release identity as the required signer:
-
-```sh
-rnid -i bc7291552be7a58f361522990465165c -V rns_*.rsm *.rsg
-```
-
-The `rnid` utility will then verify the signatures, and display whether they are valid. If the signature cannot be verified, the release has been tampered with and should be discarded.
-
-
 ### 2026-05-22: RNS 1.3.1
 
 This maintenance release fixes a single bug.
 
 **Changes**
 - Fixed regression in request response transfer size accumulator
-
-**Verified Retrieval**
-You can retrieve and verify this release over Reticulum using the built-in `rngit release` utility. To download all artifacts, and the release manifest for future updates, you can use the following command:
-
-```sh
-rngit release rns://7649a50d84610232d1416b41d2896aff/reticulum/reticulum fetch latest:all --signer bc7291552be7a58f361522990465165c
-```
-
-To retrieve only the `.whl` package for installation, and the release manifest, you can use:
-
-```sh
-rngit release rns://7649a50d84610232d1416b41d2896aff/reticulum/reticulum fetch "latest:rns-*-py3-none-any.whl" --signer bc7291552be7a58f361522990465165c
-```
-
-**Release Signatures**
-Release artifacts include a signed `rsm` release manifest and `rsg` signature files that can be validated against the RNS release signing identity `<bc7291552be7a58f361522990465165c>` using `rngit` or `rnid`. To perform an offline verification of all release artifacts using a manifest:
-
-```sh
-rngit release rns_*.rsm fetch latest:all --offline --signer bc7291552be7a58f361522990465165c
-```
-
-To verify releases using individual `rsg` files, while also verifying the manifest itself, download the `rsm` and `rsg` signatures, make sure they are in the same folder as the release artifact, and run `rnid` signature verification with the release identity as the required signer:
-
-```sh
-rnid -i bc7291552be7a58f361522990465165c -V rns_*.rsm *.rsg
-```
-
-The `rnid` utility will then verify the signatures, and display whether they are valid. If the signature cannot be verified, the release has been tampered with and should be discarded.
 
 ### 2026-05-21: RNS 1.3.0
 
@@ -164,28 +85,6 @@ This maintenance release fixes a number of bugs.
 - Adjusted timeouts for remote operations in `rngit`
 - Updated documentation
 
-**Verified Retrieval**
-You can retrieve and verify this release over Reticulum using the built-in `rngit release` utility. To download all artifacts, and the release manifest for future updates, you can use the following command:
-
-```sh
-rngit release rns://7649a50d84610232d1416b41d2896aff/reticulum/reticulum fetch latest:all --signer bc7291552be7a58f361522990465165c
-```
-
-To retrieve only the `.whl` package for installation, you can use:
-
-```sh
-rngit release rns://7649a50d84610232d1416b41d2896aff/reticulum/reticulum fetch latest:rns-1.3.0-py3-none-any.whl --signer bc7291552be7a58f361522990465165c
-```
-
-**Release Signatures**
-Release artifacts include a signed `rsm` release manifest and `rsg` signature files that can be validated against the RNS release signing identity `<bc7291552be7a58f361522990465165c>` using `rnid`. To verify files, download the `rsm` and `rsg` signatures, make sure they are in the same folder as the release artifact, and run `rnid` signature verification with the release identity as the required signer:
-
-```sh
-rnid -i bc7291552be7a58f361522990465165c -V manifest.rsm *.rsg
-```
-
-The `rnid` utility will then verify the signatures, and display whether they are valid. If the signature cannot be verified, the release has been tampered with and should be discarded.
-
 ### 2026-05-19: RNS 1.2.9
 
 This release completes the operational functionality of the `rngit` system, which now has full release creation, fetch and verified update support using the `rngit release` command. Additionally, two chapters have been added to the manual should cover all the things that `rngit` is currently capable of.
@@ -200,28 +99,6 @@ This release completes the operational functionality of the `rngit` system, whic
 - Improved known destinations persist reliability
 - Improved page node ref link handling in `rngit`
 - Improved logging in various locations
-
-**Verified Retrieval**
-You can retrieve and verify this release over Reticulum using the built-in `rngit release` utility. To download all artifacts, and the release manifest for future updates, you can use the following command:
-
-```sh
-rngit release rns://7649a50d84610232d1416b41d2896aff/reticulum/reticulum fetch latest:all --signer bc7291552be7a58f361522990465165c
-```
-
-To retrieve only the `.whl` package for installation, you can use:
-
-```sh
-rngit release rns://7649a50d84610232d1416b41d2896aff/reticulum/reticulum fetch latest:rns-1.2.8-py3-none-any.whl --signer bc7291552be7a58f361522990465165c
-```
-
-**Release Signatures**
-Release artifacts include a signed `rsm` release manifest and `rsg` signature files that can be validated against the RNS release signing identity `<bc7291552be7a58f361522990465165c>` using `rnid`. To verify files, download the `rsm` and `rsg` signatures, make sure they are in the same folder as the release artifact, and run `rnid` signature verification with the release identity as the required signer:
-
-```sh
-rnid -i bc7291552be7a58f361522990465165c -V manifest.rsm *.rsg
-```
-
-The `rnid` utility will then verify the signatures, and display whether they are valid. If the signature cannot be verified, the release has been tampered with and should be discarded.
 
 ### 2026-05-18: RNS 1.2.8
 
@@ -243,15 +120,6 @@ This release improves the `rngit` system with signed release manifest generation
 - Fixed various minor bugs and inconsistencies in `rngit`
 - Dropped `note` metadata field requirement from `rsg` structure
 
-**Release Signatures**
-Release artifacts include a signed `rsm` release manifest and `rsg` signature files that can be validated against the RNS release signing identity `<bc7291552be7a58f361522990465165c>` using `rnid`. To verify files, download the `rsm` and `rsg` signatures, make sure they are in the same folder as the release artifact, and run `rnid` signature verification with the release identity as the required signer:
-
-```sh
-rnid -i bc7291552be7a58f361522990465165c -V manifest.rsm *.rsg
-```
-
-The `rnid` utility will then verify the signatures, and display whether they are valid. If the signature cannot be verified, the release has been tampered with and should be discarded.
-
 ### 2026-05-17: RNS 1.2.7
 
 This release significantly improves the `rngit` system with fork, mirroring and empty repository creation functionality, a new work document proposals feature, improvements to the transport core reliability and efficiency and various other tweaks and improvements.
@@ -268,15 +136,6 @@ This release significantly improves the `rngit` system with fork, mirroring and 
 - Improved stats pages `rngit`
 - Improved transfer completed feedback in `rncp`, thanks to **neutral**
 - Improved interface transport insertion and removal
-
-**Release Signatures**
-Release artifacts include `rsg` signature files that can be validated against the RNS release signing identity `<bc7291552be7a58f361522990465165c>` using `rnid`. To verify files, download the `rsg` signatures, make sure they are in the same folder as the release artifact, and run `rnid` signature verification with the release identity as the required signer:
-
-```sh
-rnid -i bc7291552be7a58f361522990465165c -V rns*.whl
-```
-
-The `rnid` utility will then verify the signatures, and display whether it is valid. If the signature cannot be verified, the file has been tampered with and should be thrown very far away in a jiffy.
 
 ### 2026-05-14: RNS 1.2.6
 
@@ -298,15 +157,6 @@ This release adds further improvements to the `rnid` and `rngit` utilities, and 
 - Fixed missing none check in interface discovery sanitizer thanks to PAzter1101
 - Fixed potential race condition in interface discovery
 - Fixed `rngit` remote helper hanging on startup if no client config had been created previously, and RNS loglevel was configured at debug or higher
-
-**Release Signatures**
-Release artifacts include `rsg` signature files that can be validated against the RNS release signing identity `<bc7291552be7a58f361522990465165c>` using `rnid`. To verify files, download the `rsg` signatures, make sure they are in the same folder as the release artifact, and run `rnid` signature verification with the release identity as the required signer:
-
-```sh
-rnid -i bc7291552be7a58f361522990465165c -V rns*.whl
-```
-
-The `rnid` utility will then verify the signatures, and display whether it is valid. If the signature cannot be verified, the file has been tampered with and should be thrown very far away in a jiffy.
 
 ### 2026-05-09: RNS 1.2.5
 
@@ -335,15 +185,6 @@ For all node ops out there, I'd recomment updating to this at some sort of semi-
 - Fixed various edge-cases and inconsistencies in markdown rendering in `rngit`
 - Ensured canonical validation functions in `rngit`
 - Lots of other small fixes and stability improvements to `rngit`
-
-**Release Signatures**
-Release artifacts include `rsg` signature files that can be validated against the RNS release signing identity `<bc7291552be7a58f361522990465165c>` using `rnid`. To verify files, download the `rsg` signatures, make sure they are in the same folder as the release artifact, and run `rnid` signature verification with the release identity as the required signer:
-
-```sh
-rnid -i bc7291552be7a58f361522990465165c -V rns-1.2.5-py3-none-any.whl
-```
-
-The `rnid` utility will then verify the signatures, and display whether it is valid. If the signature cannot be verified, the file has been tampered with and should be thrown very far away in a jiffy.
 
 ### 2026-05-07: RNS 1.2.4
 
